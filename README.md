@@ -1,31 +1,83 @@
-Application Routes
-POST -> /api/somiod
+## Application Routes
+* POST
+  ```sh
+  /api/somiod 
+
         -> [FromBody] Application
-GET -> /api/somiod
-PUT -> /api/somiod/{id:int}
+  ```
+* GET
+  ```sh
+  /api/somiod 
+  ```
+* PUT
+  ```sh
+  /api/somiod/{id:int}
+
         -> int id
         -> [FromBody] Application
-DELETE -> /api/somiod/{id:int}
+  ```
+
+* DELETE
+  ```sh
+  /api/somiod/{id:int}
+
         -> int id
+  ```       
 
 
-Module Routes
-POST -> /api/somiod/{module:alpha}
+
+## Module Routes
+* POST
+  ```sh
+  /api/somiod/{module:alpha}
+
         -> [FromBody] Model
-GET -> /api/somiod/{module:alpha}
-PUT -> /api/somiod/{module:alpha}/{id:int}
+  ```
+* GET
+  ```sh
+  /api/somiod/{module:alpha}
+  ```
+* PUT
+  ```sh
+  /api/somiod/{module:alpha}/{id:int}
+
         -> int id
         -> [FromBody] Model
-DELETE -> /api/somiod/{module:alpha}/{id:int}
+  ```
+
+* DELETE
+  ```sh
+  /api/somiod/{module:alpha}/{id:int}
+
         -> int id
+  ```   
 
 
-SubModule Routes
-POST -> /api/{module:alpha}/{value:alpha}
+## Module Routes
+* POST
+  ```sh
+  /api/{module:alpha}/{value:alpha}
+
         -> [FromBody] ...
-GET -> /api/{module:alpha}/{value:alpha}
-PUT -> /api/somiod/{module:alpha}/{value:alpha}/{id:int}
+  ```
+* GET
+  ```sh
+  /api/{module:alpha}/{value:alpha}
+  ```
+* PUT
+  ```sh
+  /api/somiod/{module:alpha}/{value:alpha}/{id:int}
+
         -> int id
         -> [FromBody] ...
-DELETE -> /api/somiod/{module:alpha}/{value:alpha}/{id:int}
+  ```
+
+* DELETE
+  ```sh
+  /api/somiod/{module:alpha}/{value:alpha}/{id:int}
+
         -> int id
+  ```   
+
+        
+
