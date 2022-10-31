@@ -12,10 +12,7 @@ namespace SOMIOD.Controllers
     {
         // Create
         // Read
-        // Update
-        // Delete
-        
-        [Route("{module}/{value}")]
+        [Route("{module:alpha}/{value:alpha}")]
         // value can be Subscription or Data
         public IHttpActionResult GetApplication(string module, string value)
         {
@@ -23,5 +20,10 @@ namespace SOMIOD.Controllers
             System.Diagnostics.Debug.WriteLine(value);
             return Ok();
         }
+
+        // Update
+        // Delete
+
+
     }
 }
