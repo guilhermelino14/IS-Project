@@ -8,18 +8,19 @@ using System.Web.Http;
 namespace SOMIOD.Controllers
 {
     [RoutePrefix("api/somiod")]
-    public class SubscriptionController : ApiController
+    public class SubModuleController : ApiController
     {
         // Create
         // Read
         // Update
         // Delete
-
-        [Route("{module}/{subscription}")]
-        public IHttpActionResult GetApplication(string module, string subscription)
+        
+        [Route("{module}/{value}")]
+        // value can be Subscription or Data
+        public IHttpActionResult GetApplication(string module, string value)
         {
             System.Diagnostics.Debug.WriteLine(module);
-            System.Diagnostics.Debug.WriteLine(subscription);
+            System.Diagnostics.Debug.WriteLine(value);
             return Ok();
         }
     }
