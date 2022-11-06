@@ -86,6 +86,7 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\ApplicationController.cs" />
+    <Compile Include="Controllers\MainController.cs" />
     <Compile Include="Controllers\ModuleController.cs" />
     <Compile Include="Controllers\SubModuleController.cs" />
     <Compile Include="Global.asax.cs">
