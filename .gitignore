@@ -1,10 +1,5 @@
 
-SOMIOD/.vs/SOMIOD/config/applicationhost.config
-SOMIOD/.vs/SOMIOD/v17/.suo
-SOMIOD/SOMIOD/bin/SOMIOD.dll
-SOMIOD/SOMIOD/bin/SOMIOD.pdb
-SOMIOD/SOMIOD/obj/Debug/DesignTimeResolveAssemblyReferences.cache
-SOMIOD/SOMIOD/obj/Debug/SOMIOD.csproj.AssemblyReference.cache
-SOMIOD/SOMIOD/obj/Debug/SOMIOD.csproj.CoreCompileInputs.cache
-SOMIOD/SOMIOD/obj/Debug/SOMIOD.dll
-SOMIOD/SOMIOD/obj/Debug/SOMIOD.pdb
+SOMIOD/.vs/*
+SOMIOD/SOMIOD/obj/*
+SOMIOD/SOMIOD/bin/*
+SOMIOD/SOMIOD/config/*
