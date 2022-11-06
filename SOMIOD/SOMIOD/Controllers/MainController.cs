@@ -1,6 +1,7 @@
 ﻿using SOMIOD.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -11,6 +12,8 @@ namespace SOMIOD.Controllers
     [RoutePrefix("api/somiod")]
     public class MainController : ApiController
     {
+        string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["SOMIOD.Properties.Settings.ConnStr"].ConnectionString;
+
         // !!! Applications !!!
         // Create
         [Route("")]
@@ -23,6 +26,23 @@ namespace SOMIOD.Controllers
         [Route("")]
         public IHttpActionResult GetApplication()
         {
+            SqlConnection conn = null;
+
+            try
+            {
+                conn = new SqlConnection(connectionString);
+                conn.Open();
+                conn.Close();
+            }
+            catch (Exception e)
+            {
+                if (conn.State == System.Data.ConnectionState.Open)
+                {
+                    conn.Close();
+                }
+                return null;
+            }
+
             return Ok();
         }
 
