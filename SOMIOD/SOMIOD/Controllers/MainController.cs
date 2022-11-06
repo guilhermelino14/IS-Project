@@ -63,71 +63,62 @@ namespace SOMIOD.Controllers
 
         // !!! Modules !!!
         // Create
-        [Route("{module:alpha}")]
+        [Route("{module}")]
         public IHttpActionResult PostModule([FromBody] Model model)
         {
-            System.Diagnostics.Debug.WriteLine(model);
             return Ok();
         }
 
         // Read
-        [Route("{module:alpha}")]
+        [Route("{module}")]
         public IHttpActionResult GetModule(string module)
         {
-            System.Diagnostics.Debug.WriteLine(module);
             return Ok();
         }
 
         // Update
-        [Route("{module:alpha}/{id:int}")]
+        [Route("{module}/{id:int}")]
         public IHttpActionResult PutModule(int id, [FromBody] Model model)
         {
-            System.Diagnostics.Debug.WriteLine("asd");
             return Ok();
         }
 
         // Delete
-        [Route("{module:alpha}/{id:int}")]
+        [Route("{module}/{id:int}")]
         public IHttpActionResult DeleteModule(int id)
         {
-            System.Diagnostics.Debug.WriteLine("asd");
             return Ok();
         }
 
         // !!! Data & Subscriptions !!!
         // Create
-        [Route("{module:alpha}/{value:alpha}")]
+        [Route("{module}/{value}")]
         // value can be Subscription or Data
         public IHttpActionResult PostSubModule([FromBody] Subscription model)
         {
-            System.Diagnostics.Debug.WriteLine("asd");
             return Ok();
         }
 
         // Read
-        [Route("{module:alpha}/{value:alpha}")]
+        [Route("{module}/{value}")]
         // value can be Subscription or Data
         public IHttpActionResult GetSubModule(string module, string value)
         {
-            System.Diagnostics.Debug.WriteLine(module);
-            System.Diagnostics.Debug.WriteLine(value);
             return Ok();
         }
 
         // Update
-        [Route("{module:alpha}/{value:alpha}/{id:int}")]
+        [Route("{module}/{value}/{id:int}")]
         // value can be Subscription or Data
         public IHttpActionResult PutSubModule(int id, [FromBody] Subscription model)
         {
-            System.Diagnostics.Debug.WriteLine("asd");
             return Ok();
         }
         // Delete
 
-        [Route("{module:alpha}/{value:alpha}/{id:int}")]
+        [Route("{module}/{value}/{id:int}")]
         public IHttpActionResult DeleteSubModule(int id)
         {
-            System.Diagnostics.Debug.WriteLine("asd");
             return Ok();
         }
     }
