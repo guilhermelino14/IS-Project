@@ -63,28 +63,28 @@ namespace SOMIOD.Controllers
 
         // !!! Modules !!!
         // Create
-        [Route("{module}")]
-        public IHttpActionResult PostModule([FromBody] Model model)
+        [Route("{application}")]
+        public IHttpActionResult PostModule([FromBody] Application application)
         {
             return Ok();
         }
 
         // Read
-        [Route("{module}")]
-        public IHttpActionResult GetModule(string module)
+        [Route("{application}")]
+        public IHttpActionResult GetModule(string application)
         {
             return Ok();
         }
 
         // Update
-        [Route("{module}/{id:int}")]
-        public IHttpActionResult PutModule(int id, [FromBody] Model model)
+        [Route("{application}/{id:int}")]
+        public IHttpActionResult PutModule(int id, [FromBody] Application application)
         {
             return Ok();
         }
 
         // Delete
-        [Route("{module}/{id:int}")]
+        [Route("{application}/{id:int}")]
         public IHttpActionResult DeleteModule(int id)
         {
             return Ok();
@@ -92,7 +92,7 @@ namespace SOMIOD.Controllers
 
         // !!! Data & Subscriptions !!!
         // Create
-        [Route("{module}/{value}")]
+        [Route("{application}/{module}")]
         // value can be Subscription or Data
         public IHttpActionResult PostSubModule([FromBody] Subscription model)
         {
@@ -100,7 +100,7 @@ namespace SOMIOD.Controllers
         }
 
         // Read
-        [Route("{module}/{value}")]
+        [Route("{application}/{module}")]
         // value can be Subscription or Data
         public IHttpActionResult GetSubModule(string module, string value)
         {
@@ -108,7 +108,7 @@ namespace SOMIOD.Controllers
         }
 
         // Update
-        [Route("{module}/{value}/{id:int}")]
+        [Route("{application}/{module}/{id:int}")]
         // value can be Subscription or Data
         public IHttpActionResult PutSubModule(int id, [FromBody] Subscription model)
         {
@@ -116,7 +116,7 @@ namespace SOMIOD.Controllers
         }
         // Delete
 
-        [Route("{module}/{value}/{id:int}")]
+        [Route("{application}/{module}/{id:int}")]
         public IHttpActionResult DeleteSubModule(int id)
         {
             return Ok();
