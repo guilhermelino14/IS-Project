@@ -21,9 +21,7 @@ namespace SOMIOD.Controllers
         [Route("")]
         public IHttpActionResult PostApplication([FromBody] Application app)
         {
-<<<<<<< HEAD
             System.Diagnostics.Debug.WriteLine(app);
-=======
             string sqlString = "INSERT INTO applications values(@name, @creation_dt)";
 
             SqlCommand sqlCommand = new SqlCommand(sqlString);
@@ -32,7 +30,6 @@ namespace SOMIOD.Controllers
 
             postSomething(sqlCommand);
 
->>>>>>> Post-&-Delete
             return Ok();
         }
 
@@ -142,13 +139,8 @@ namespace SOMIOD.Controllers
         // !!!!!!!!!!!!!!!
 
         // Create
-<<<<<<< HEAD
-        [Route("{application}")]
-        public IHttpActionResult PostModule([FromBody] Application application)
-=======
         [Route("{module}")]
         public IHttpActionResult PostModule([FromBody] Module module)
->>>>>>> Post-&-Delete
         {
             string sqlString = "INSERT INTO modules values(@name, @creation_dt, @parent)";
 
@@ -162,15 +154,9 @@ namespace SOMIOD.Controllers
             return Ok();
         }
 
-<<<<<<< HEAD
-        // Read
-        [Route("{application}")]
-        public IHttpActionResult GetModule(string application)
-=======
         // Read Modules
         [Route("{module}")]
         public IHttpActionResult GetModules(string module)
->>>>>>> Post-&-Delete
         {
             List<Module> availableMods = new List<Module>();
 
@@ -258,13 +244,8 @@ namespace SOMIOD.Controllers
         }
 
         // Update
-<<<<<<< HEAD
-        [Route("{application}/{id:int}")]
-        public IHttpActionResult PutModule(int id, [FromBody] Application application)
-=======
         [Route("{module}/{id:int}")]
         public IHttpActionResult PutModule(int id, [FromBody] Module model)
->>>>>>> Post-&-Delete
         {
             return Ok();
         }
