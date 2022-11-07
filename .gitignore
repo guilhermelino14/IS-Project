@@ -1,9 +1,7 @@
-SOMIOD/.vs/
-SOMIOD/SOMIOD/obj/
-SOMIOD/SOMIOD/bin/
-SOMIOD/SOMIOD/config/
-SOMIOD/.vs/SOMIOD/config/
+SOMIOD/.vs/*
+SOMIOD/SOMIOD/obj/*
+SOMIOD/SOMIOD/bin/*
+SOMIOD/SOMIOD/config/*
+SOMIOD/.vs/SOMIOD/config/*
 SOMIOD/SOMIOD/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
 SOMIOD/SOMIOD/obj/Debug/SOMIOD.csproj.AssemblyReference.cache
-SOMIOD/.vs/SOMIOD/
-SOMIOD\.vs\
