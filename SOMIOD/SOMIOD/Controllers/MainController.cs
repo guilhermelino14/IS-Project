@@ -19,6 +19,7 @@ namespace SOMIOD.Controllers
         [Route("")]
         public IHttpActionResult PostApplication([FromBody] Application app)
         {
+            System.Diagnostics.Debug.WriteLine(app);
             return Ok();
         }
 
