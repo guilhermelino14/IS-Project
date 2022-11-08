@@ -1,9 +1,11 @@
-﻿using SOMIOD.Models;
+﻿using Newtonsoft.Json.Linq;
+using SOMIOD.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
@@ -148,8 +150,14 @@ namespace SOMIOD.Controllers
         // Read
         [Route("{application}/{module}")]
         // value can be Subscription or Data
-        public IHttpActionResult GetSubModule(string module, string value)
+        public IHttpActionResult GetSubModule(string application, string module)
         {
+            var bodyStream = new StreamReader(HttpContext.Current.Request.InputStream);
+            bodyStream.BaseStream.Seek(0, SeekOrigin.Begin);
+            var bodyText = bodyStream.ReadToEnd();
+            var bodyJson = JObject.Parse(bodyText);
+            var res_type = bodyJson["res_type"];  // aqui marco
+            System.Diagnostics.Debug.WriteLine(res_type);
             return Ok();
         }
 
