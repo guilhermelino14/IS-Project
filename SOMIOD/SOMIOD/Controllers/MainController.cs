@@ -8,6 +8,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
+using System.Web;
 using System.Web.Http;
 using System.Xml;
 using System.Xml.Linq;
@@ -19,7 +20,7 @@ namespace SOMIOD.Controllers
     public class MainController : ApiController
     {
         string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["SOMIOD.Properties.Settings.ConnStr"].ConnectionString;
-
+        string FILE_PATH = "C:\\Users\\Guilherme Lino\\Desktop\\IPL\\IS\\IS-Project\\response.xml";
         // !!! Applications !!!
         // Create
         [Route("")]
@@ -79,7 +80,7 @@ namespace SOMIOD.Controllers
         // !!!!!!!!!!!!!!!
 
         // Create
-        [Route("{module}")]
+        [Route("{application}")]
         public IHttpActionResult PostModule([FromBody] Module module)
         {
             string sqlString = "INSERT INTO modules values(@name, @creation_dt, @parent)";
@@ -89,16 +90,21 @@ namespace SOMIOD.Controllers
             sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
             sqlCommand.Parameters.AddWithValue("@parent", module.parent);
 
+            System.Diagnostics.Debug.WriteLine(sqlString);
             PostSomething(sqlCommand);
 
             return Ok();
         }
 
         // Read Modules
-        [Route("{module}")]
-        public IHttpActionResult GetModules(string module)
+        [Route("{application}")]
+        public IHttpActionResult GetModules(string application)
         {
-            string sqlQuery = "SELECT * FROM modules ORDER BY id";
+            string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application +"\'";
+            XmlDocument docApplication = GetSomething(sqlQueryGetApplicationID, "Applications");
+            int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);
+            string sqlQuery = "SELECT * FROM modules WHERE parent = " + idApplication + " ORDER BY id";
+            //string sqlQuery = "SELECT * FROM modules ORDER BY id";
             XmlDocument doc = GetSomething(sqlQuery, "Modules");
 
             return Ok();
@@ -206,7 +212,6 @@ namespace SOMIOD.Controllers
             {
                 conn = new SqlConnection(connectionString);
                 conn.Open();
-
                 SqlCommand command = new SqlCommand(sqlString, conn);
                 SqlDataReader reader = command.ExecuteReader();
 
@@ -230,7 +235,7 @@ namespace SOMIOD.Controllers
                             root.AppendChild(CreateSubscription(doc, sub.id, sub.name, sub.creation_dt, sub.parent, sub.subscription_event, sub.endpoint, "Subscription"));
                             break;
                     }
-                    doc.Save("C:\\Users\\marco\\Desktop\\GitHub\\IS-Project\\response.xml");
+                    doc.Save(FILE_PATH);
                 }
 
                 reader.Close();
