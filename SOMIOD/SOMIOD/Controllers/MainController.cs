@@ -5,9 +5,13 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Xml;
+using System.Xml.Linq;
+
 
 namespace SOMIOD.Controllers
 {
@@ -28,7 +32,7 @@ namespace SOMIOD.Controllers
             sqlCommand.Parameters.AddWithValue("@name", app.name);
             sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
 
-            postSomething(sqlCommand);
+            PostSomething(sqlCommand);
 
             return Ok();
         }
@@ -37,84 +41,20 @@ namespace SOMIOD.Controllers
         [Route("")]
         public IHttpActionResult GetApplications()
         {
-            List<Application> availableApps = new List<Application>();
+            string sqlQuery = "SELECT * FROM applications ORDER BY id";
+            XmlDocument doc = GetSomething(sqlQuery, "Applications");
 
-            SqlConnection conn = null;
-            try
-            {
-                conn = new SqlConnection(connectionString);
-                conn.Open();
-
-                SqlCommand command = new SqlCommand("SELECT * FROM applications ORDER BY id", conn);
-                SqlDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    Application app = new Application
-                    {
-                        id = (int)reader["id"],
-                        name = (string)reader["name"],
-                        creation_dt = (string)reader["creation_dt"],
-                    };
-                    availableApps.Add(app);
-                }
-
-                reader.Close();
-                conn.Close();
-            }
-            catch (Exception e)
-            {
-                if (conn.State == System.Data.ConnectionState.Open)
-                {
-                    conn.Close();
-                }
-                return null;
-            }
-
-            return Ok(availableApps);
+            return Ok();
         }
 
         // Read Application by id
         [Route("{id:int}")]
         public IHttpActionResult GetApplicationById(int id)
         {
-            SqlConnection conn = null;
-            Application app = null;
+            string sqlQuery = "SELECT * FROM applications WHERE id = " + id + " ORDER BY id";
+            XmlDocument doc = GetSomething(sqlQuery, "Applications");
 
-            try
-            {
-                conn = new SqlConnection(connectionString);
-                conn.Open();
-
-                string testString = "SELECT * FROM applications WHERE id = " + id + " ORDER BY id";
-
-                SqlCommand command = new SqlCommand(testString, conn);
-
-                SqlDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    app = new Application
-                    {
-                        id = (int)reader["id"],
-                        name = (string)reader["name"],
-                        creation_dt = (string)reader["creation_dt"],
-                    };
-                }
-
-                reader.Close();
-                conn.Close();
-            }
-            catch (Exception e)
-            {
-                if (conn.State == System.Data.ConnectionState.Open)
-                {
-                    conn.Close();
-                }
-                return null;
-            }
-
-            return Ok(app);
+            return Ok();
         }
 
         // Update
@@ -129,7 +69,7 @@ namespace SOMIOD.Controllers
         [Route("{id:int}")]
         public IHttpActionResult DeleteApplication(int id)
         {
-            deleteSomething("applications", id);
+            DeleteSomething("applications", id);
 
             return Ok();
         }
@@ -149,7 +89,7 @@ namespace SOMIOD.Controllers
             sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
             sqlCommand.Parameters.AddWithValue("@parent", module.parent);
 
-            postSomething(sqlCommand);
+            PostSomething(sqlCommand);
 
             return Ok();
         }
@@ -158,89 +98,20 @@ namespace SOMIOD.Controllers
         [Route("{module}")]
         public IHttpActionResult GetModules(string module)
         {
-            List<Module> availableMods = new List<Module>();
+            string sqlQuery = "SELECT * FROM modules ORDER BY id";
+            XmlDocument doc = GetSomething(sqlQuery, "Modules");
 
-            SqlConnection conn = null;
-
-            try
-            {
-                conn = new SqlConnection(connectionString);
-                conn.Open();
-
-                SqlCommand command = new SqlCommand("SELECT * FROM applications ORDER BY id", conn);
-                SqlDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    Module mod = new Module
-                    {
-                        id = (int)reader["id"],
-                        name = (string)reader["name"],
-                        creation_dt = (string)reader["creation_dt"],
-                        parent = (int)reader["parent"],
-                    };
-                    availableMods.Add(mod);
-                }
-
-                reader.Close();
-                conn.Close();
-            }
-            catch (Exception e)
-            {
-                if (conn.State == System.Data.ConnectionState.Open)
-                {
-                    conn.Close();
-                    System.Diagnostics.Debug.WriteLine(e.Message);
-                }
-                return null;
-            }
-
-            return Ok(availableMods);
+            return Ok();
         }
 
         // Read Module by id
         [Route("{module}/{id:int}")]
         public IHttpActionResult GetModuleById(string module, int id)
         {
-            SqlConnection conn = null;
-            Module mod = null;
+            string sqlQuery = "SELECT * FROM modules WHERE id = " + id + " ORDER BY id";
+            XmlDocument doc = GetSomething(sqlQuery, "Modules");
 
-            try
-            {
-                conn = new SqlConnection(connectionString);
-                conn.Open();
-
-                string testString = "SELECT * FROM modules WHERE id = " + id + " ORDER BY id";
-
-                SqlCommand command = new SqlCommand(testString, conn);
-
-                SqlDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    mod = new Module
-                    {
-                        id = (int)reader["id"],
-                        name = (string)reader["name"],
-                        creation_dt = (string)reader["creation_dt"],
-                        parent = (int)reader["parent"],
-                    };
-                }
-
-                reader.Close();
-                conn.Close();
-            }
-            catch (Exception e)
-            {
-                if (conn.State == System.Data.ConnectionState.Open)
-                {
-                    conn.Close();
-                    System.Diagnostics.Debug.WriteLine(e.Message);
-                }
-                return null;
-            }
-
-            return Ok(mod);
+            return Ok();
         }
 
         // Update
@@ -254,7 +125,7 @@ namespace SOMIOD.Controllers
         [Route("{application}/{id:int}")]
         public IHttpActionResult DeleteModule(int id)
         {
-            deleteSomething("modules", id);
+            DeleteSomething("modules", id);
 
             return Ok();
         }
@@ -288,6 +159,8 @@ namespace SOMIOD.Controllers
         [Route("{application}/{module}/{id:int}")]
         public IHttpActionResult DeleteSubModule(int id)
         {
+            DeleteSomething("",id);
+
             return Ok();
         }
 
@@ -296,7 +169,7 @@ namespace SOMIOD.Controllers
         // !! General Functions !!
         // !!!!!!!!!!!!!!!!!!!!!!!
 
-        public void postSomething (SqlCommand sqlCommand)
+        public void PostSomething (SqlCommand sqlCommand)
         {
             SqlConnection sqlConnection = null;
 
@@ -321,7 +194,61 @@ namespace SOMIOD.Controllers
             }
         }
 
-        public void deleteSomething (string location, int id)
+        public XmlDocument GetSomething (string sqlString, string type)
+        {
+            SqlConnection conn = null;
+
+            XmlDocument doc = CreateXML();
+            XmlElement root = doc.CreateElement(type);
+            doc.AppendChild(root);
+
+            try
+            {
+                conn = new SqlConnection(connectionString);
+                conn.Open();
+
+                SqlCommand command = new SqlCommand(sqlString, conn);
+                SqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    switch (type) {
+                        case ("Applications"):
+                            Application app = FillApplication(reader);
+                            root.AppendChild(CreateApplication(doc, app.id, app.name, app.creation_dt, "Application"));
+                            break;
+                        case ("Modules"):
+                            Module mod = FillModule(reader);
+                            root.AppendChild(CreateModule(doc, mod.id, mod.name, mod.creation_dt, mod.parent, "Module"));
+                            break;
+                        case ("Data"):
+                            Data data = FillData(reader);
+                            root.AppendChild(CreateData(doc, data.id, data.content, data.creation_dt, data.parent, "Data"));
+                            break;
+                        case ("Subscriptions"):
+                            Subscription sub = FillSubscription(reader);
+                            root.AppendChild(CreateSubscription(doc, sub.id, sub.name, sub.creation_dt, sub.parent, sub.subscription_event, sub.endpoint, "Subscription"));
+                            break;
+                    }
+                    doc.Save("C:\\Users\\marco\\Desktop\\GitHub\\IS-Project\\response.xml");
+                }
+
+                reader.Close();
+                conn.Close();
+            }
+            catch (Exception e)
+            {
+                if (conn.State == System.Data.ConnectionState.Open)
+                {
+                    conn.Close();
+                }
+                System.Diagnostics.Debug.WriteLine(e.Message);
+            }
+
+            return doc;
+        }
+
+        public void DeleteSomething (string location, int id)
         {
             SqlConnection sqlConnection = null;
 
@@ -346,5 +273,129 @@ namespace SOMIOD.Controllers
             }
         }
 
+        public XmlDocument CreateXML()
+        {
+            XmlDocument xmlDocument = new XmlDocument();
+
+            XmlDeclaration xmlDeclaration = xmlDocument.CreateXmlDeclaration("1.0", null, null);
+            xmlDocument.AppendChild(xmlDeclaration);
+
+            return xmlDocument;
+        }
+
+        public XmlElement CreateApplication(XmlDocument doc, int id, string name, string creation_dt, string type)
+        {
+            XmlElement application = doc.CreateElement(type);
+
+            XmlElement idE = doc.CreateElement("id");
+            idE.InnerText = id.ToString();
+            XmlElement nameE = doc.CreateElement("name");
+            nameE.InnerText = name;
+            XmlElement creation_dtE = doc.CreateElement("creation_dt");
+            creation_dtE.InnerText = creation_dt;
+
+            application.AppendChild(idE);
+            application.AppendChild(nameE);
+            application.AppendChild(creation_dtE);
+
+            return application;
+        }
+
+        public XmlElement CreateModule(XmlDocument doc, int id, string name, string creation_dt, int parent, string type)
+        {
+            XmlElement module = CreateApplication(doc, id, name, creation_dt, type);
+
+            XmlElement parentE = doc.CreateElement("parent");
+            parentE.InnerText = parent.ToString();
+
+            module.AppendChild(parentE);
+
+            return module;
+        }
+
+        public XmlElement CreateData(XmlDocument doc, int id, string content, string creation_dt, int parent, string type)
+        {
+            XmlElement data = doc.CreateElement(type);
+
+            XmlElement idE = doc.CreateElement("id");
+            idE.InnerText = id.ToString();
+            XmlElement contentE = doc.CreateElement("name");
+            contentE.InnerText = content;
+            XmlElement creation_dtE = doc.CreateElement("creation_dt");
+            creation_dtE.InnerText = creation_dt;
+            XmlElement parentE = doc.CreateElement("parent");
+            parentE.InnerText = parent.ToString();
+
+            data.AppendChild(idE);
+            data.AppendChild(contentE);
+            data.AppendChild(creation_dtE);
+            data.AppendChild(parentE);
+
+            return data;
+        }
+
+        public XmlElement CreateSubscription(XmlDocument doc, int id, string name, string creation_dt, int parent, string eve, string endpoint, string type)
+        {
+            XmlElement module = CreateModule(doc, id, name, creation_dt, parent, type);
+
+            XmlElement eventE = doc.CreateElement("event");
+            eventE.InnerText = eve;
+            XmlElement endpointE = doc.CreateElement("endpoint");
+            endpointE.InnerText = endpoint;
+
+            module.AppendChild(eventE);
+            module.AppendChild(endpointE);
+
+            return module;
+        }
+
+        public Application FillApplication(SqlDataReader reader)
+        {
+            Application application = new Application
+            {
+                id = (int)reader["id"],
+                name = (string)reader["name"],
+                creation_dt = (string)reader["creation_dt"],
+            };
+            return application;
+        }
+
+        public Module FillModule(SqlDataReader reader)
+        {
+            Module module = new Module
+            {
+                id = (int)reader["id"],
+                name = (string)reader["name"],
+                creation_dt = (string)reader["creation_dt"],
+                parent = (int)reader["parent"],
+            };
+            return module;
+        }
+
+        public Data FillData(SqlDataReader reader)
+        {
+            Data data = new Data
+            {
+                id = (int)reader["id"],
+                content = (string)reader["content"],
+                creation_dt = (string)reader["creation_dt"],
+                parent = (int)reader["parent"],
+            };
+            return data;
+        }
+
+        public Subscription FillSubscription(SqlDataReader reader)
+        {
+            Subscription subscription = new Subscription
+            {
+                id = (int)reader["id"],
+                name = (string)reader["content"],
+                creation_dt = (string)reader["creation_dt"],
+                parent = (int)reader["parent"],
+                subscription_event = (string)reader["event"],
+                endpoint = (string)reader["endpoint"],
+            };
+            return subscription;
+        }
     }
 }
