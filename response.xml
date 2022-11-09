@@ -1,21 +1,8 @@
 <?xml version="1.0"?>
-<Modules>
-  <Module>
-    <id>14</id>
-    <name>FDP</name>
-    <creation_dt>2022-11-07 01:32:24</creation_dt>
-    <parent>3</parent>
-  </Module>
-  <Module>
-    <id>15</id>
-    <name>FDP2</name>
-    <creation_dt>2022-11-07 01:32:24</creation_dt>
-    <parent>3</parent>
-  </Module>
-  <Module>
-    <id>22</id>
-    <name>FDP5</name>
-    <creation_dt>2022-11-08 19:05:24</creation_dt>
-    <parent>3</parent>
-  </Module>
-</Modules>
+<Applications>
+  <Application>
+    <id>1</id>
+    <name>App - A</name>
+    <creation_dt>2022-11-07 01:27:35</creation_dt>
+  </Application>
+</Applications>

@@ -10,11 +10,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Web;
 using System.Web.Http;
 using System.Xml;
 using System.Xml.Linq;
-
+using static System.Net.Mime.MediaTypeNames;
+using Application = SOMIOD.Models.Application;
+using Module = SOMIOD.Models.Module;
 
 namespace SOMIOD.Controllers
 {
@@ -22,7 +25,10 @@ namespace SOMIOD.Controllers
     public class MainController : ApiController
     {
         string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["SOMIOD.Properties.Settings.ConnStr"].ConnectionString;
-        string FILE_PATH = "C:\\Users\\Guilherme Lino\\Desktop\\IPL\\IS\\IS-Project\\response.xml";
+        
+        //string FILE_PATH = "C:\\Users\\Guilherme Lino\\Desktop\\IPL\\IS\\IS-Project\\response.xml";
+        string FILE_PATH = "C:\\Users\\marco\\Desktop\\GitHub\\IS-Project\\response.xml";
+
         // !!! Applications !!!
         // Create
         [Route("")]
@@ -35,7 +41,7 @@ namespace SOMIOD.Controllers
             sqlCommand.Parameters.AddWithValue("@name", app.name);
             sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
 
-            PostSomething(sqlCommand);
+            ExecuteSqlCommand(sqlCommand);
 
             return Ok();
         }
@@ -47,7 +53,7 @@ namespace SOMIOD.Controllers
             string sqlQuery = "SELECT * FROM applications ORDER BY id";
             XmlDocument doc = GetSomething(sqlQuery, "Applications");
 
-            return Ok();
+            return Ok(doc);
         }
 
         // Read Application by id
@@ -57,14 +63,29 @@ namespace SOMIOD.Controllers
             string sqlQuery = "SELECT * FROM applications WHERE id = " + id + " ORDER BY id";
             XmlDocument doc = GetSomething(sqlQuery, "Applications");
 
-            return Ok();
+            return Ok(doc);
         }
 
         // Update
         [Route("{id:int}")]
         public IHttpActionResult PutApplication(int id, [FromBody] Application app)
         {
-            System.Diagnostics.Debug.WriteLine("asd");
+            Application oldApp = new Application();
+
+            string sqlQuery = "SELECT * FROM applications WHERE id = " + id + " ORDER BY id";
+            XmlDocument doc = GetSomething(sqlQuery, "Applications");
+
+            oldApp.name = doc.SelectSingleNode("//name").InnerText;
+
+            if (app.name != oldApp.name)
+            {
+                string sqlString = "UPDATE applications SET name = \'" + app.name + "\' WHERE id = " + id;
+
+                SqlCommand sqlCommand = new SqlCommand(sqlString);
+
+                ExecuteSqlCommand(sqlCommand);
+            }
+
             return Ok();
         }
 
@@ -93,7 +114,7 @@ namespace SOMIOD.Controllers
             sqlCommand.Parameters.AddWithValue("@parent", module.parent);
 
             System.Diagnostics.Debug.WriteLine(sqlString);
-            PostSomething(sqlCommand);
+            ExecuteSqlCommand(sqlCommand);
 
             return Ok();
         }
@@ -105,11 +126,11 @@ namespace SOMIOD.Controllers
             string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application +"\'";
             XmlDocument docApplication = GetSomething(sqlQueryGetApplicationID, "Applications");
             int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);
+
             string sqlQuery = "SELECT * FROM modules WHERE parent = " + idApplication + " ORDER BY id";
-            //string sqlQuery = "SELECT * FROM modules ORDER BY id";
             XmlDocument doc = GetSomething(sqlQuery, "Modules");
 
-            return Ok();
+            return Ok(doc);
         }
 
         // Read Module by id
@@ -119,13 +140,29 @@ namespace SOMIOD.Controllers
             string sqlQuery = "SELECT * FROM modules WHERE id = " + id + " ORDER BY id";
             XmlDocument doc = GetSomething(sqlQuery, "Modules");
 
-            return Ok();
+            return Ok(doc);
         }
 
         // Update
         [Route("{module}/{id:int}")]
-        public IHttpActionResult PutModule(int id, [FromBody] Module model)
+        public IHttpActionResult PutModule(int id, [FromBody] Module module)
         {
+            Module oldModule = new Module();
+
+            string sqlQuery = "SELECT * FROM modules WHERE id = " + id + " ORDER BY id";
+            XmlDocument doc = GetSomething(sqlQuery, "Applications");
+
+            oldModule.name = doc.SelectSingleNode("//name").InnerText;
+
+            if (module.name != oldModule.name)
+            {
+                string sqlString = "UPDATE modules SET name = \'" + module.name + "\' WHERE id = " + id;
+
+                SqlCommand sqlCommand = new SqlCommand(sqlString);
+
+                ExecuteSqlCommand(sqlCommand);
+            }
+
             return Ok();
         }
 
@@ -142,9 +179,47 @@ namespace SOMIOD.Controllers
         // Create
         [Route("{application}/{module}")]
         // value can be Subscription or Data
-        public IHttpActionResult PostSubModule([FromBody] Subscription model)
+        public IHttpActionResult PostSubModule([FromBody] Subscription model, string module)
         {
-            return Ok();
+            string res_type = VerifyResType();
+
+            string sqlQueryGetModuleID = "SELECT * FROM modules WHERE name = \'" + module + "\'";
+            XmlDocument docAModule = GetSomething(sqlQueryGetModuleID, "Modules");
+            int idModule = Convert.ToInt32(docAModule.SelectSingleNode("//id").InnerText);
+
+            if (idModule == model.parent)
+            {
+                if (res_type == "data")
+                {
+                    string sqlString = "INSERT INTO data values(@content, @creation_dt, @parent)";
+
+                    SqlCommand sqlCommand = new SqlCommand(sqlString);
+                    sqlCommand.Parameters.AddWithValue("@content", model.name);
+                    sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
+                    sqlCommand.Parameters.AddWithValue("@parent", model.parent);
+
+                    System.Diagnostics.Debug.WriteLine(sqlString);
+                    ExecuteSqlCommand(sqlCommand);
+
+                }
+                else if (res_type == "subscription")
+                {
+                    string sqlString = "INSERT INTO subscriptions values(@name, @creation_dt, @parent, @event, @endpoint)";
+
+                    SqlCommand sqlCommand = new SqlCommand(sqlString);
+                    sqlCommand.Parameters.AddWithValue("@name", model.name);
+                    sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
+                    sqlCommand.Parameters.AddWithValue("@parent", model.parent);
+                    sqlCommand.Parameters.AddWithValue("@event", model.subscription_event);
+                    sqlCommand.Parameters.AddWithValue("@endpoint", model.endpoint);
+
+                    System.Diagnostics.Debug.WriteLine(sqlString);
+                    ExecuteSqlCommand(sqlCommand);
+                }
+            }
+
+            return Ok(res_type + " created successfully!");
+            //return Ok(docAModule);
         }
 
         // Read
@@ -152,12 +227,42 @@ namespace SOMIOD.Controllers
         // value can be Subscription or Data
         public IHttpActionResult GetSubModule(string application, string module)
         {
-            var bodyStream = new StreamReader(HttpContext.Current.Request.InputStream);
-            bodyStream.BaseStream.Seek(0, SeekOrigin.Begin);
-            var bodyText = bodyStream.ReadToEnd();
-            var bodyJson = JObject.Parse(bodyText);
-            var res_type = bodyJson["res_type"];  // aqui marco
-            System.Diagnostics.Debug.WriteLine(res_type);
+            string res_type = VerifyResType();
+
+            if (res_type == "data")
+            {
+                string sqlQuery = "SELECT * FROM data ORDER BY id";
+                XmlDocument doc = GetSomething(sqlQuery, "Data");
+
+            }
+            else if (res_type == "subscription")
+            {
+                string sqlQuery = "SELECT * FROM subscriptions ORDER BY id";
+                XmlDocument doc = GetSomething(sqlQuery, "Subscriptions");
+            }
+
+            return Ok();
+        }
+
+        // Read
+        [Route("{application}/{module}/{id:int}")]
+        // value can be Subscription or Data
+        public IHttpActionResult GetSubModuleById(string application, string module, int id)
+        {
+            string res_type = VerifyResType();
+
+            if (res_type == "data")
+            {
+                string sqlQuery = "SELECT * FROM data WHERE id = " + id + " ORDER BY id";
+                XmlDocument doc = GetSomething(sqlQuery, "Data");
+
+            }
+            else if (res_type == "subscription")
+            {
+                string sqlQuery = "SELECT * FROM subscriptions WHERE id = " + id + " ORDER BY id";
+                XmlDocument doc = GetSomething(sqlQuery, "Subscriptions");
+            }
+
             return Ok();
         }
 
@@ -173,7 +278,16 @@ namespace SOMIOD.Controllers
         [Route("{application}/{module}/{id:int}")]
         public IHttpActionResult DeleteSubModule(int id)
         {
-            DeleteSomething("",id);
+            string res_type = VerifyResType();
+
+            if (res_type == "data")
+            {
+                DeleteSomething("data", id);
+            }
+            else if (res_type == "subscription")
+            {
+                DeleteSomething("subscriptions", id);
+            }
 
             return Ok();
         }
@@ -183,7 +297,7 @@ namespace SOMIOD.Controllers
         // !! General Functions !!
         // !!!!!!!!!!!!!!!!!!!!!!!
 
-        public void PostSomething (SqlCommand sqlCommand)
+        public void ExecuteSqlCommand (SqlCommand sqlCommand)
         {
             SqlConnection sqlConnection = null;
 
@@ -409,6 +523,18 @@ namespace SOMIOD.Controllers
                 endpoint = (string)reader["endpoint"],
             };
             return subscription;
+        }
+
+        public string VerifyResType ()
+        {
+            var bodyStream = new StreamReader(HttpContext.Current.Request.InputStream);
+            bodyStream.BaseStream.Seek(0, SeekOrigin.Begin);
+            var bodyText = bodyStream.ReadToEnd();
+            var bodyJson = JObject.Parse(bodyText);
+            var res_type = bodyJson["res_type"];
+            System.Diagnostics.Debug.WriteLine(res_type);
+
+            return res_type.ToString().ToLower();
         }
     }
 }
