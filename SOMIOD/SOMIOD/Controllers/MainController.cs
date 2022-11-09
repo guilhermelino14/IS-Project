@@ -271,10 +271,42 @@ namespace SOMIOD.Controllers
         // value can be Subscription or Data
         public IHttpActionResult PutSubModule(int id, [FromBody] Subscription model)
         {
+            string res_type = VerifyResType();
+
+            if (res_type == "data")
+            {
+                Data oldData = new Data();
+
+                string sqlQuery = "SELECT * FROM data WHERE id = " + id + " ORDER BY id";
+                XmlDocument doc = GetSomething(sqlQuery, "Data");
+
+                oldData.content = doc.SelectSingleNode("//content").InnerText;
+
+                if (model.name != oldData.content)
+                {
+                    string sqlString = "UPDATE data SET content = \'" + model.name + "\' WHERE id = " + id;
+
+                    SqlCommand sqlCommand = new SqlCommand(sqlString);
+
+                    ExecuteSqlCommand(sqlCommand);
+                }
+
+            }
+            else if (res_type == "subscription")
+            {
+                Subscription oldSubscription = new Subscription();
+
+                string sqlQuery = "SELECT * FROM subscriptions WHERE id = " + id + " ORDER BY id";
+                XmlDocument doc = GetSomething(sqlQuery, "Subscriptions");
+
+                oldSubscription.name = doc.SelectSingleNode("//name").InnerText;
+
+            }
+
             return Ok();
         }
-        // Delete
 
+        // Delete
         [Route("{application}/{module}/{id:int}")]
         public IHttpActionResult DeleteSubModule(int id)
         {
@@ -446,7 +478,7 @@ namespace SOMIOD.Controllers
 
             XmlElement idE = doc.CreateElement("id");
             idE.InnerText = id.ToString();
-            XmlElement contentE = doc.CreateElement("name");
+            XmlElement contentE = doc.CreateElement("content");
             contentE.InnerText = content;
             XmlElement creation_dtE = doc.CreateElement("creation_dt");
             creation_dtE.InnerText = creation_dt;
