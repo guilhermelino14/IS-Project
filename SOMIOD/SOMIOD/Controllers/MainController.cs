@@ -104,14 +104,18 @@ namespace SOMIOD.Controllers
 
         // Create
         [Route("{application}")]
-        public IHttpActionResult PostModule([FromBody] Module module)
+        public IHttpActionResult PostModule(string application, [FromBody] Module module)
         {
+            string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+            XmlDocument docApplication = GetSomething(sqlQueryGetApplicationID, "Applications");
+            int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);
+
             string sqlString = "INSERT INTO modules values(@name, @creation_dt, @parent)";
 
             SqlCommand sqlCommand = new SqlCommand(sqlString);
             sqlCommand.Parameters.AddWithValue("@name", module.name);
             sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
-            sqlCommand.Parameters.AddWithValue("@parent", module.parent);
+            sqlCommand.Parameters.AddWithValue("@parent", idApplication);
 
             System.Diagnostics.Debug.WriteLine(sqlString);
             ExecuteSqlCommand(sqlCommand);
@@ -187,35 +191,32 @@ namespace SOMIOD.Controllers
             XmlDocument docAModule = GetSomething(sqlQueryGetModuleID, "Modules");
             int idModule = Convert.ToInt32(docAModule.SelectSingleNode("//id").InnerText);
 
-            if (idModule == model.parent)
+            if (res_type == "data")
             {
-                if (res_type == "data")
-                {
-                    string sqlString = "INSERT INTO data values(@content, @creation_dt, @parent)";
+                string sqlString = "INSERT INTO data values(@content, @creation_dt, @parent)";
 
-                    SqlCommand sqlCommand = new SqlCommand(sqlString);
-                    sqlCommand.Parameters.AddWithValue("@content", model.name);
-                    sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
-                    sqlCommand.Parameters.AddWithValue("@parent", model.parent);
+                SqlCommand sqlCommand = new SqlCommand(sqlString);
+                sqlCommand.Parameters.AddWithValue("@content", model.name);
+                sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
+                sqlCommand.Parameters.AddWithValue("@parent", idModule);
 
-                    System.Diagnostics.Debug.WriteLine(sqlString);
-                    ExecuteSqlCommand(sqlCommand);
+                System.Diagnostics.Debug.WriteLine(sqlString);
+                ExecuteSqlCommand(sqlCommand);
 
-                }
-                else if (res_type == "subscription")
-                {
-                    string sqlString = "INSERT INTO subscriptions values(@name, @creation_dt, @parent, @event, @endpoint)";
+            }
+            else if (res_type == "subscription")
+            {
+                string sqlString = "INSERT INTO subscriptions values(@name, @creation_dt, @parent, @event, @endpoint)";
 
-                    SqlCommand sqlCommand = new SqlCommand(sqlString);
-                    sqlCommand.Parameters.AddWithValue("@name", model.name);
-                    sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
-                    sqlCommand.Parameters.AddWithValue("@parent", model.parent);
-                    sqlCommand.Parameters.AddWithValue("@event", model.subscription_event);
-                    sqlCommand.Parameters.AddWithValue("@endpoint", model.endpoint);
+                SqlCommand sqlCommand = new SqlCommand(sqlString);
+                sqlCommand.Parameters.AddWithValue("@name", model.name);
+                sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
+                sqlCommand.Parameters.AddWithValue("@parent", idModule);
+                sqlCommand.Parameters.AddWithValue("@event", model.subscription_event);
+                sqlCommand.Parameters.AddWithValue("@endpoint", model.endpoint);
 
-                    System.Diagnostics.Debug.WriteLine(sqlString);
-                    ExecuteSqlCommand(sqlCommand);
-                }
+                System.Diagnostics.Debug.WriteLine(sqlString);
+                ExecuteSqlCommand(sqlCommand);
             }
 
             return Ok(res_type + " created successfully!");
