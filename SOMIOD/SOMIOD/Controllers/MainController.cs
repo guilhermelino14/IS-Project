@@ -170,29 +170,23 @@ namespace SOMIOD.Controllers
             {
                 string sqlQueryAppId = "SELECT * FROM applications WHERE name = \'" + application + "\'";
                 int idApplication = VerifyOnDB(sqlQueryAppId, "Applications");
-                System.Diagnostics.Debug.WriteLine(idApplication);
+
                 if (idApplication == 0)
                 {
                     return Content(HttpStatusCode.BadRequest, application + " does not exist");
                 }
 
-                List<int> idList = GetTableIdDB("applications");
+                string sqlString = "INSERT INTO modules values(@name, @creation_dt, @parent)";
 
-                if (idList.Contains(idApplication))
-                {
-                    string sqlString = "INSERT INTO modules values(@name, @creation_dt, @parent)";
+                SqlCommand sqlCommand = new SqlCommand(sqlString);
+                sqlCommand.Parameters.AddWithValue("@name", module.name);
+                sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
+                sqlCommand.Parameters.AddWithValue("@parent", idApplication);
 
-                    SqlCommand sqlCommand = new SqlCommand(sqlString);
-                    sqlCommand.Parameters.AddWithValue("@name", module.name);
-                    sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
-                    sqlCommand.Parameters.AddWithValue("@parent", idApplication);
+                System.Diagnostics.Debug.WriteLine(sqlString);
+                ExecuteSqlCommand(sqlCommand);
 
-                    System.Diagnostics.Debug.WriteLine(sqlString);
-                    ExecuteSqlCommand(sqlCommand);
-
-                    return Ok("Module " + module.name + " created successfully");
-                }
-                return Content(HttpStatusCode.BadRequest, "Cannot create module, " + application + " does not exist");
+                return Ok("Module " + module.name + " created successfully");
             }
 
             return Content(HttpStatusCode.BadRequest, "Invalid res_type");
@@ -344,7 +338,7 @@ namespace SOMIOD.Controllers
                 return Content(HttpStatusCode.BadRequest, application + " does not exist");
             }
 
-            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' WHERE parent = " + idApplication;
+            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' AND parent = " + idApplication;
             int idModule = VerifyOnDB(sqlQueryModuleId, "Modules");
 
             if (idModule == 0)
@@ -402,7 +396,7 @@ namespace SOMIOD.Controllers
                 return Content(HttpStatusCode.BadRequest, application + " does not exist");
             }
 
-            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' WHERE parent = " + idApplication;
+            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' AND parent = " + idApplication;
             int idModule = VerifyOnDB(sqlQueryModuleId, "Modules");
 
             if (idModule == 0)
@@ -455,7 +449,7 @@ namespace SOMIOD.Controllers
                 return Content(HttpStatusCode.BadRequest, application + " does not exist");
             }
 
-            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' WHERE parent = " + idApplication;
+            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' AND parent = " + idApplication;
             int idModule = VerifyOnDB(sqlQueryModuleId, "Modules");
 
             if (idModule == 0)
@@ -496,7 +490,7 @@ namespace SOMIOD.Controllers
                 return Content(HttpStatusCode.BadRequest, application + " does not exist");
             }
 
-            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' WHERE parent = " + idApplication;
+            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' AND parent = " + idApplication;
             int idModule = VerifyOnDB(sqlQueryModuleId, "Modules");
 
             if (idModule == 0)
@@ -557,7 +551,7 @@ namespace SOMIOD.Controllers
                 return Content(HttpStatusCode.BadRequest, application + " does not exist");
             }
 
-            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' WHERE parent = " + idApplication;
+            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' AND parent = " + idApplication;
             int idModule = VerifyOnDB(sqlQueryModuleId, "Modules");
 
             if (idModule == 0)
@@ -825,42 +819,6 @@ namespace SOMIOD.Controllers
 
             return res_type.ToString().ToLower();
         }
-
-        public List<int> GetTableIdDB(string table)
-        {
-            List<int> idList = new List<int>();
-
-            string sqlQueryId = "SELECT * FROM " + table + " ORDER BY id";
-
-            SqlConnection conn = null;
-
-            try
-            {
-                conn = new SqlConnection(connectionString);
-                conn.Open();
-                SqlCommand command = new SqlCommand(sqlQueryId, conn);
-                SqlDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    idList.Add((int)reader["id"]);
-                }
-                
-
-                reader.Close();
-                conn.Close();
-            }
-            catch (Exception e)
-            {
-                if (conn.State == System.Data.ConnectionState.Open)
-                {
-                    conn.Close();
-                }
-                System.Diagnostics.Debug.WriteLine(e.Message);
-            }
-
-            return idList;
-        } 
 
         public int VerifyOnDB(string sqlQuery, string type)
         {
