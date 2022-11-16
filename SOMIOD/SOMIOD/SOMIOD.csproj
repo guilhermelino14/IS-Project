@@ -93,6 +93,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="HandlerXML.cs" />
     <Compile Include="Models\Application.cs" />
     <Compile Include="Models\Data.cs" />
     <Compile Include="Models\Module.cs" />
@@ -105,6 +106,18 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="App_Data\applicationVerification.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="App_Data\dataVerification.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="App_Data\moduleVerification.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="App_Data\subscriptionVerification.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

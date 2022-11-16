@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using ProjectXML;
 using SOMIOD.Models;
 using System;
 using System.Collections.Generic;
@@ -25,9 +26,11 @@ namespace SOMIOD.Controllers
     public class MainController : ApiController
     {
         string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["SOMIOD.Properties.Settings.ConnStr"].ConnectionString;
-        
+
         //string FILE_PATH = "C:\\Users\\Guilherme Lino\\Desktop\\IPL\\IS\\IS-Project\\response.xml";
+        //string XSD_PATH = "C:\\Users\\Guilherme Lino\\Desktop\\IPL\\IS\\IS-Project\\SOMIOD\\SOMIOD\\App_Data\\";
         string FILE_PATH = "C:\\Users\\marco\\Desktop\\GitHub\\IS-Project\\response.xml";
+        string XSD_PATH = "C:\\Users\\marco\\Desktop\\GitHub\\IS-Project\\SOMIOD\\SOMIOD\\App_Data\\";
 
         // !!! Applications !!!
         // Create
@@ -35,6 +38,7 @@ namespace SOMIOD.Controllers
         public IHttpActionResult PostApplication([FromBody] Application app)
         {
             System.Diagnostics.Debug.WriteLine(app);
+
             string sqlString = "INSERT INTO applications values(@name, @creation_dt)";
 
             SqlCommand sqlCommand = new SqlCommand(sqlString);
@@ -53,6 +57,14 @@ namespace SOMIOD.Controllers
             string sqlQuery = "SELECT * FROM applications ORDER BY id";
             XmlDocument doc = GetSomething(sqlQuery, "Applications");
 
+            HandlerXML handler = new HandlerXML(FILE_PATH, XSD_PATH + "applicationVerification.xsd");
+
+            if (!handler.ValidateXML())
+            {
+                return Ok(handler.ValidationMessage);
+            }
+
+            //return Ok(handler.ValidateXML().ToString());
             return Ok(doc);
         }
 
@@ -63,6 +75,14 @@ namespace SOMIOD.Controllers
             string sqlQuery = "SELECT * FROM applications WHERE id = " + id + " ORDER BY id";
             XmlDocument doc = GetSomething(sqlQuery, "Applications");
 
+            HandlerXML handler = new HandlerXML(FILE_PATH, XSD_PATH + "applicationVerification.xsd");
+
+            if (!handler.ValidateXML())
+            {
+                return Ok(handler.ValidationMessage);
+            }
+
+            //return Ok(handler.ValidateXML().ToString());
             return Ok(doc);
         }
 
@@ -106,9 +126,10 @@ namespace SOMIOD.Controllers
         [Route("{application}")]
         public IHttpActionResult PostModule(string application, [FromBody] Module module)
         {
-            string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+            /*string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application + "\'";
             XmlDocument docApplication = GetSomething(sqlQueryGetApplicationID, "Applications");
-            int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);
+            int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);*/
+            int idApplication = VerifyIdOnDB("applications", application);
 
             string sqlString = "INSERT INTO modules values(@name, @creation_dt, @parent)";
 
@@ -127,23 +148,45 @@ namespace SOMIOD.Controllers
         [Route("{application}")]
         public IHttpActionResult GetModules(string application)
         {
-            string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application +"\'";
+            /*string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application +"\'";
             XmlDocument docApplication = GetSomething(sqlQueryGetApplicationID, "Applications");
-            int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);
+            int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);*/
+            int idApplication = VerifyIdOnDB("applications", application);
 
             string sqlQuery = "SELECT * FROM modules WHERE parent = " + idApplication + " ORDER BY id";
             XmlDocument doc = GetSomething(sqlQuery, "Modules");
 
+            HandlerXML handler = new HandlerXML(FILE_PATH, XSD_PATH + "moduleVerification.xsd");
+
+            if (!handler.ValidateXML())
+            {
+                return Ok(handler.ValidationMessage);
+            }
+
+            //return Ok(handler.ValidateXML().ToString());
             return Ok(doc);
         }
 
         // Read Module by id
-        [Route("{module}/{id:int}")]
-        public IHttpActionResult GetModuleById(string module, int id)
+        [Route("{application}/{id:int}")]
+        public IHttpActionResult GetModuleById(string application, int id)
         {
-            string sqlQuery = "SELECT * FROM modules WHERE id = " + id + " ORDER BY id";
+            /*string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+            XmlDocument docApplication = GetSomething(sqlQueryGetApplicationID, "Applications");
+            int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);*/
+            int idApplication = VerifyIdOnDB("applications", application);
+
+            string sqlQuery = "SELECT * FROM modules WHERE id = " + id + " AND parent = " + idApplication + " ORDER BY id";
             XmlDocument doc = GetSomething(sqlQuery, "Modules");
 
+            HandlerXML handler = new HandlerXML(FILE_PATH, XSD_PATH + "moduleVerification.xsd");
+
+            if (!handler.ValidateXML())
+            {
+                return Ok(handler.ValidationMessage);
+            }
+
+            //return Ok(handler.ValidateXML().ToString());
             return Ok(doc);
         }
 
@@ -183,14 +226,16 @@ namespace SOMIOD.Controllers
         // Create
         [Route("{application}/{module}")]
         // value can be Subscription or Data
-        public IHttpActionResult PostSubModule([FromBody] Subscription model, string module)
+        public IHttpActionResult PostSubModule(string application, string module, [FromBody] Subscription model)
         {
             string res_type = VerifyResType();
 
-            string sqlQueryGetModuleID = "SELECT * FROM modules WHERE name = \'" + module + "\'";
+            int idApplication = VerifyIdOnDB("applications", application); // Verifica se app existe e guarda o número
+
+            string sqlQueryGetModuleID = "SELECT * FROM modules WHERE name = \'" + module + "\' AND parent = " + idApplication;
             XmlDocument docAModule = GetSomething(sqlQueryGetModuleID, "Modules");
             int idModule = Convert.ToInt32(docAModule.SelectSingleNode("//id").InnerText);
-
+            
             if (res_type == "data")
             {
                 string sqlString = "INSERT INTO data values(@content, @creation_dt, @parent)";
@@ -230,16 +275,39 @@ namespace SOMIOD.Controllers
         {
             string res_type = VerifyResType();
 
+            int idApplication = VerifyIdOnDB("applications", application); // Verifica se app existe e guarda o número
+
+            string sqlQueryGetModuleID = "SELECT * FROM modules WHERE name = \'" + module + "\' AND parent = " + idApplication;
+            XmlDocument docAModule = GetSomething(sqlQueryGetModuleID, "Modules");
+            int idModule = Convert.ToInt32(docAModule.SelectSingleNode("//id").InnerText);
+
             if (res_type == "data")
             {
-                string sqlQuery = "SELECT * FROM data ORDER BY id";
+                string sqlQuery = "SELECT * FROM data WHERE parent = " + idModule + " ORDER BY id";
                 XmlDocument doc = GetSomething(sqlQuery, "Data");
 
+                HandlerXML handler = new HandlerXML(FILE_PATH, XSD_PATH + "dataVerification.xsd");
+
+                if (!handler.ValidateXML())
+                {
+                    return Ok(handler.ValidationMessage);
+                }
+
+                return Ok(handler.ValidateXML().ToString());
             }
             else if (res_type == "subscription")
             {
-                string sqlQuery = "SELECT * FROM subscriptions ORDER BY id";
+                string sqlQuery = "SELECT * FROM subscriptions WHERE parent = " + idModule + " ORDER BY id";
                 XmlDocument doc = GetSomething(sqlQuery, "Subscriptions");
+
+                HandlerXML handler = new HandlerXML(FILE_PATH, XSD_PATH + "subscriptionVerification.xsd");
+
+                if (!handler.ValidateXML())
+                {
+                    return Ok(handler.ValidationMessage);
+                }
+
+                return Ok(handler.ValidateXML().ToString());
             }
 
             return Ok();
@@ -252,15 +320,21 @@ namespace SOMIOD.Controllers
         {
             string res_type = VerifyResType();
 
+            int idApplication = VerifyIdOnDB("applications", application); // Verifica se app existe e guarda o número
+
+            string sqlQueryGetModuleID = "SELECT * FROM modules WHERE name = \'" + module + "\' AND parent = " + idApplication;
+            XmlDocument docAModule = GetSomething(sqlQueryGetModuleID, "Modules");
+            int idModule = Convert.ToInt32(docAModule.SelectSingleNode("//id").InnerText);
+
             if (res_type == "data")
             {
-                string sqlQuery = "SELECT * FROM data WHERE id = " + id + " ORDER BY id";
+                string sqlQuery = "SELECT * FROM data WHERE id = " + id + " AND parent = " + idModule + " ORDER BY id";
                 XmlDocument doc = GetSomething(sqlQuery, "Data");
 
             }
             else if (res_type == "subscription")
             {
-                string sqlQuery = "SELECT * FROM subscriptions WHERE id = " + id + " ORDER BY id";
+                string sqlQuery = "SELECT * FROM subscriptions WHERE id = " + id + " AND parent = " + idModule + " ORDER BY id";
                 XmlDocument doc = GetSomething(sqlQuery, "Subscriptions");
             }
 
@@ -496,17 +570,17 @@ namespace SOMIOD.Controllers
 
         public XmlElement CreateSubscription(XmlDocument doc, int id, string name, string creation_dt, int parent, string eve, string endpoint, string type)
         {
-            XmlElement module = CreateModule(doc, id, name, creation_dt, parent, type);
+            XmlElement subscription = CreateModule(doc, id, name, creation_dt, parent, type);
 
             XmlElement eventE = doc.CreateElement("event");
             eventE.InnerText = eve;
             XmlElement endpointE = doc.CreateElement("endpoint");
             endpointE.InnerText = endpoint;
 
-            module.AppendChild(eventE);
-            module.AppendChild(endpointE);
+            subscription.AppendChild(eventE);
+            subscription.AppendChild(endpointE);
 
-            return module;
+            return subscription;
         }
 
         public Application FillApplication(SqlDataReader reader)
@@ -549,7 +623,7 @@ namespace SOMIOD.Controllers
             Subscription subscription = new Subscription
             {
                 id = (int)reader["id"],
-                name = (string)reader["content"],
+                name = (string)reader["name"],
                 creation_dt = (string)reader["creation_dt"],
                 parent = (int)reader["parent"],
                 subscription_event = (string)reader["event"],
@@ -568,6 +642,16 @@ namespace SOMIOD.Controllers
             System.Diagnostics.Debug.WriteLine(res_type);
 
             return res_type.ToString().ToLower();
+        }
+
+        public int VerifyIdOnDB (string table, string verification)
+        {
+            string sqlQueryGetApplicationID = "SELECT * FROM " + table + " WHERE name = \'" + verification + "\'";
+            XmlDocument doc = GetSomething(sqlQueryGetApplicationID, "Applications");
+
+            int id = Convert.ToInt32(doc.SelectSingleNode("//id").InnerText);
+
+            return id;
         }
     }
 }
