@@ -15,6 +15,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Web;
 using System.Web.Http;
+using System.Web.UI.WebControls;
 using System.Xml;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
@@ -45,8 +46,6 @@ namespace SOMIOD.Controllers
 
             if (res_type == "application")
             {
-                //System.Diagnostics.Debug.WriteLine(app);
-
                 string sqlString = "INSERT INTO applications values(@name, @creation_dt)";
 
                 SqlCommand sqlCommand = new SqlCommand(sqlString);
@@ -55,7 +54,7 @@ namespace SOMIOD.Controllers
 
                 ExecuteSqlCommand(sqlCommand);
 
-                return Ok("Application created successfully");
+                return Ok("Application " + app.name + " created successfully");
             }
 
             return Content(HttpStatusCode.BadRequest, "Invalid res_type");
@@ -79,7 +78,6 @@ namespace SOMIOD.Controllers
                     return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
                 }
 
-                //return Ok(handler.ValidateXML().ToString());
                 return Ok(doc);
             }
 
@@ -104,7 +102,6 @@ namespace SOMIOD.Controllers
                     return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
                 }
 
-                //return Ok(handler.ValidateXML().ToString());
                 return Ok(doc);
             }
 
@@ -133,9 +130,11 @@ namespace SOMIOD.Controllers
                     SqlCommand sqlCommand = new SqlCommand(sqlString);
 
                     ExecuteSqlCommand(sqlCommand);
+
+                    return Ok("Application " + id + " updated successfully");
                 }
 
-                return Ok("Application " + id + " updated successfully");
+                return Content(HttpStatusCode.BadRequest, "Application " + id + " not updated");
             }
 
             return Content(HttpStatusCode.BadRequest, "Invalid res_type");
@@ -169,22 +168,31 @@ namespace SOMIOD.Controllers
 
             if (res_type == "module")
             {
-                /*string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application + "\'";
-                XmlDocument docApplication = GetSomething(sqlQueryGetApplicationID, "Applications");
-                int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);*/
-                int idApplication = VerifyIdOnDB("applications", application);
+                string sqlQueryAppId = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+                int idApplication = VerifyOnDB(sqlQueryAppId, "Applications");
+                System.Diagnostics.Debug.WriteLine(idApplication);
+                if (idApplication == 0)
+                {
+                    return Content(HttpStatusCode.BadRequest, application + " does not exist");
+                }
 
-                string sqlString = "INSERT INTO modules values(@name, @creation_dt, @parent)";
+                List<int> idList = GetTableIdDB("applications");
 
-                SqlCommand sqlCommand = new SqlCommand(sqlString);
-                sqlCommand.Parameters.AddWithValue("@name", module.name);
-                sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
-                sqlCommand.Parameters.AddWithValue("@parent", idApplication);
+                if (idList.Contains(idApplication))
+                {
+                    string sqlString = "INSERT INTO modules values(@name, @creation_dt, @parent)";
 
-                System.Diagnostics.Debug.WriteLine(sqlString);
-                ExecuteSqlCommand(sqlCommand);
+                    SqlCommand sqlCommand = new SqlCommand(sqlString);
+                    sqlCommand.Parameters.AddWithValue("@name", module.name);
+                    sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
+                    sqlCommand.Parameters.AddWithValue("@parent", idApplication);
 
-                return Ok("Module created successfully");
+                    System.Diagnostics.Debug.WriteLine(sqlString);
+                    ExecuteSqlCommand(sqlCommand);
+
+                    return Ok("Module " + module.name + " created successfully");
+                }
+                return Content(HttpStatusCode.BadRequest, "Cannot create module, " + application + " does not exist");
             }
 
             return Content(HttpStatusCode.BadRequest, "Invalid res_type");
@@ -198,10 +206,13 @@ namespace SOMIOD.Controllers
 
             if (res_type == "module")
             {
-                /*string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application +"\'";
-                XmlDocument docApplication = GetSomething(sqlQueryGetApplicationID, "Applications");
-                int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);*/
-                int idApplication = VerifyIdOnDB("applications", application);
+                string sqlQueryAppId = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+                int idApplication = VerifyOnDB(sqlQueryAppId, "Applications");
+
+                if (idApplication == 0)
+                {
+                    return Content(HttpStatusCode.BadRequest, application + " does not exist");
+                }
 
                 string sqlQuery = "SELECT * FROM modules WHERE parent = " + idApplication + " ORDER BY id";
                 XmlDocument doc = GetSomething(sqlQuery, "Modules");
@@ -212,6 +223,7 @@ namespace SOMIOD.Controllers
                 {
                     return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
                 }
+
                 return Ok(doc);
             }
 
@@ -226,10 +238,13 @@ namespace SOMIOD.Controllers
 
             if (res_type == "module")
             {
-                /*string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application + "\'";
-                XmlDocument docApplication = GetSomething(sqlQueryGetApplicationID, "Applications");
-                int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);*/
-                int idApplication = VerifyIdOnDB("applications", application);
+                string sqlQueryAppId = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+                int idApplication = VerifyOnDB(sqlQueryAppId, "Applications");
+
+                if (idApplication == 0)
+                {
+                    return Content(HttpStatusCode.BadRequest, application + " does not exist");
+                }
 
                 string sqlQuery = "SELECT * FROM modules WHERE id = " + id + " AND parent = " + idApplication + " ORDER BY id";
                 XmlDocument doc = GetSomething(sqlQuery, "Modules");
@@ -249,12 +264,20 @@ namespace SOMIOD.Controllers
 
         // Update
         [Route("{application}/{id:int}")]
-        public IHttpActionResult PutModule(int id, [FromBody] Module module)
+        public IHttpActionResult PutModule(string application, int id, [FromBody] Module module)
         {
             string res_type = VerifyResType();
 
             if (res_type == "module")
             {
+                string sqlQueryAppId = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+                int idApplication = VerifyOnDB(sqlQueryAppId, "Applications");
+
+                if (idApplication == 0)
+                {
+                    return Content(HttpStatusCode.BadRequest, application + " does not exist");
+                }
+
                 Module oldModule = new Module();
 
                 string sqlQuery = "SELECT * FROM modules WHERE id = " + id + " ORDER BY id";
@@ -269,9 +292,10 @@ namespace SOMIOD.Controllers
                     SqlCommand sqlCommand = new SqlCommand(sqlString);
 
                     ExecuteSqlCommand(sqlCommand);
-                }
 
-                return Ok("Module " + id + " updated successfully");
+                    return Ok("Module " + id + " updated successfully");
+                }
+                return Content(HttpStatusCode.BadRequest, "Module " + id + " not updated");
             }
 
             return Content(HttpStatusCode.BadRequest, "Invalid res_type");
@@ -279,12 +303,20 @@ namespace SOMIOD.Controllers
 
         // Delete
         [Route("{application}/{id:int}")]
-        public IHttpActionResult DeleteModule(int id)
+        public IHttpActionResult DeleteModule(string application, int id)
         {
             string res_type = VerifyResType();
 
             if (res_type == "module")
             {
+                string sqlQueryAppId = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+                int idApplication = VerifyOnDB(sqlQueryAppId, "Applications");
+
+                if (idApplication == 0)
+                {
+                    return Content(HttpStatusCode.BadRequest, application + " does not exist");
+                }
+
                 DeleteSomething("modules", id);
 
                 return Ok("Module " + id + " deleted successfully");
@@ -304,12 +336,22 @@ namespace SOMIOD.Controllers
         {
             string res_type = VerifyResType();
 
-            int idApplication = VerifyIdOnDB("applications", application); // Verifica se app existe e guarda o número
+            string sqlQueryAppId = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+            int idApplication = VerifyOnDB(sqlQueryAppId, "Applications");
 
-            string sqlQueryGetModuleID = "SELECT * FROM modules WHERE name = \'" + module + "\' AND parent = " + idApplication;
-            XmlDocument docAModule = GetSomething(sqlQueryGetModuleID, "Modules");
-            int idModule = Convert.ToInt32(docAModule.SelectSingleNode("//id").InnerText);
-            
+            if (idApplication == 0)
+            {
+                return Content(HttpStatusCode.BadRequest, application + " does not exist");
+            }
+
+            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' WHERE parent = " + idApplication;
+            int idModule = VerifyOnDB(sqlQueryModuleId, "Modules");
+
+            if (idModule == 0)
+            {
+                return Content(HttpStatusCode.BadRequest, module + " does not exist on " + application);
+            }
+
             if (res_type == "data")
             {
                 string sqlString = "INSERT INTO data values(@content, @creation_dt, @parent)";
@@ -352,11 +394,21 @@ namespace SOMIOD.Controllers
         {
             string res_type = VerifyResType();
 
-            int idApplication = VerifyIdOnDB("applications", application); // Verifica se app existe e guarda o número
+            string sqlQueryAppId = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+            int idApplication = VerifyOnDB(sqlQueryAppId, "Applications");
 
-            string sqlQueryGetModuleID = "SELECT * FROM modules WHERE name = \'" + module + "\' AND parent = " + idApplication;
-            XmlDocument docAModule = GetSomething(sqlQueryGetModuleID, "Modules");
-            int idModule = Convert.ToInt32(docAModule.SelectSingleNode("//id").InnerText);
+            if (idApplication == 0)
+            {
+                return Content(HttpStatusCode.BadRequest, application + " does not exist");
+            }
+
+            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' WHERE parent = " + idApplication;
+            int idModule = VerifyOnDB(sqlQueryModuleId, "Modules");
+
+            if (idModule == 0)
+            {
+                return Content(HttpStatusCode.BadRequest, module + " does not exist on " + application);
+            }
 
             if (res_type == "data")
             {
@@ -395,11 +447,21 @@ namespace SOMIOD.Controllers
         {
             string res_type = VerifyResType();
 
-            int idApplication = VerifyIdOnDB("applications", application); // Verifica se app existe e guarda o número
+            string sqlQueryAppId = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+            int idApplication = VerifyOnDB(sqlQueryAppId, "Applications");
 
-            string sqlQueryGetModuleID = "SELECT * FROM modules WHERE name = \'" + module + "\' AND parent = " + idApplication;
-            XmlDocument docAModule = GetSomething(sqlQueryGetModuleID, "Modules");
-            int idModule = Convert.ToInt32(docAModule.SelectSingleNode("//id").InnerText);
+            if (idApplication == 0)
+            {
+                return Content(HttpStatusCode.BadRequest, application + " does not exist");
+            }
+
+            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' WHERE parent = " + idApplication;
+            int idModule = VerifyOnDB(sqlQueryModuleId, "Modules");
+
+            if (idModule == 0)
+            {
+                return Content(HttpStatusCode.BadRequest, module + " does not exist on " + application);
+            }
 
             if (res_type == "data")
             {
@@ -422,9 +484,25 @@ namespace SOMIOD.Controllers
         // Update
         [Route("{application}/{module}/{id:int}")]
         // value can be Subscription or Data
-        public IHttpActionResult PutSubModule(int id, [FromBody] Subscription model)
+        public IHttpActionResult PutSubModule(string application, string module, int id, [FromBody] Subscription model)
         {
             string res_type = VerifyResType();
+
+            string sqlQueryAppId = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+            int idApplication = VerifyOnDB(sqlQueryAppId, "Applications");
+
+            if (idApplication == 0)
+            {
+                return Content(HttpStatusCode.BadRequest, application + " does not exist");
+            }
+
+            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' WHERE parent = " + idApplication;
+            int idModule = VerifyOnDB(sqlQueryModuleId, "Modules");
+
+            if (idModule == 0)
+            {
+                return Content(HttpStatusCode.BadRequest, module + " does not exist on " + application);
+            }
 
             if (res_type == "data")
             {
@@ -467,9 +545,25 @@ namespace SOMIOD.Controllers
 
         // Delete
         [Route("{application}/{module}/{id:int}")]
-        public IHttpActionResult DeleteSubModule(int id)
+        public IHttpActionResult DeleteSubModule(string application, string module, int id)
         {
             string res_type = VerifyResType();
+
+            string sqlQueryAppId = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+            int idApplication = VerifyOnDB(sqlQueryAppId, "Applications");
+
+            if (idApplication == 0)
+            {
+                return Content(HttpStatusCode.BadRequest, application + " does not exist");
+            }
+
+            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' WHERE parent = " + idApplication;
+            int idModule = VerifyOnDB(sqlQueryModuleId, "Modules");
+
+            if (idModule == 0)
+            {
+                return Content(HttpStatusCode.BadRequest, module + " does not exist on " + application);
+            }
 
             if (res_type == "data")
             {
@@ -732,21 +826,55 @@ namespace SOMIOD.Controllers
             return res_type.ToString().ToLower();
         }
 
-        public int VerifyIdOnDB (string table, string verification)
+        public List<int> GetTableIdDB(string table)
         {
-            string sqlQueryGetApplicationID = "SELECT * FROM " + table + " WHERE name = \'" + verification + "\'";
+            List<int> idList = new List<int>();
 
-            XmlDocument doc = GetSomething(sqlQueryGetApplicationID, "Applications");
+            string sqlQueryId = "SELECT * FROM " + table + " ORDER BY id";
 
-            if (doc.SelectSingleNode("//id").InnerText == string.Empty)
+            SqlConnection conn = null;
+
+            try
+            {
+                conn = new SqlConnection(connectionString);
+                conn.Open();
+                SqlCommand command = new SqlCommand(sqlQueryId, conn);
+                SqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    idList.Add((int)reader["id"]);
+                }
+                
+
+                reader.Close();
+                conn.Close();
+            }
+            catch (Exception e)
+            {
+                if (conn.State == System.Data.ConnectionState.Open)
+                {
+                    conn.Close();
+                }
+                System.Diagnostics.Debug.WriteLine(e.Message);
+            }
+
+            return idList;
+        } 
+
+        public int VerifyOnDB(string sqlQuery, string type)
+        {
+            XmlDocument doc = GetSomething(sqlQuery, type);
+            System.Diagnostics.Debug.WriteLine(doc.SelectSingleNode("//id"));
+
+            if (doc.SelectSingleNode("//id") == null)
             {
                 return 0;
-            } else
-            {
-                int id = Convert.ToInt32(doc.SelectSingleNode("//id").InnerText);
-
-                return id;
             }
+
+            int id = Convert.ToInt32(doc.SelectSingleNode("//id").InnerText);
+            System.Diagnostics.Debug.WriteLine(id);
+            return id;
         }
     }
 }

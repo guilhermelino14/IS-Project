@@ -1,11 +1,8 @@
 <?xml version="1.0"?>
-<Subscriptions>
-  <Subscription>
+<Applications>
+  <Application>
     <id>1</id>
-    <name>teste</name>
-    <creation_dt>2022-11-09 19:36:20</creation_dt>
-    <parent>1</parent>
-    <event>putEvent</event>
-    <endpoint>putEndpoint</endpoint>
-  </Subscription>
-</Subscriptions>
+    <name>AppA</name>
+    <creation_dt>2022-11-07 01:27:35</creation_dt>
+  </Application>
+</Applications>
