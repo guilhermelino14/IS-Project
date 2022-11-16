@@ -1,9 +1,11 @@
 <?xml version="1.0"?>
-<Modules>
-  <Module>
+<Subscriptions>
+  <Subscription>
     <id>1</id>
-    <name>ModuleA</name>
-    <creation_dt>2022-11-07 01:29:31</creation_dt>
+    <name>teste</name>
+    <creation_dt>2022-11-09 19:36:20</creation_dt>
     <parent>1</parent>
-  </Module>
-</Modules>
+    <event>putEvent</event>
+    <endpoint>putEndpoint</endpoint>
+  </Subscription>
+</Subscriptions>

@@ -12,6 +12,7 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Web;
 using System.Web.Http;
 using System.Xml;
@@ -32,90 +33,128 @@ namespace SOMIOD.Controllers
         string FILE_PATH = "C:\\Users\\marco\\Desktop\\GitHub\\IS-Project\\response.xml";
         string XSD_PATH = "C:\\Users\\marco\\Desktop\\GitHub\\IS-Project\\SOMIOD\\SOMIOD\\App_Data\\";
 
+        // !!!!!!!!!!!!!!!!!!!!
         // !!! Applications !!!
+        // !!!!!!!!!!!!!!!!!!!!
+
         // Create
         [Route("")]
         public IHttpActionResult PostApplication([FromBody] Application app)
         {
-            System.Diagnostics.Debug.WriteLine(app);
+            string res_type = VerifyResType();
 
-            string sqlString = "INSERT INTO applications values(@name, @creation_dt)";
+            if (res_type == "application")
+            {
+                //System.Diagnostics.Debug.WriteLine(app);
 
-            SqlCommand sqlCommand = new SqlCommand(sqlString);
-            sqlCommand.Parameters.AddWithValue("@name", app.name);
-            sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
+                string sqlString = "INSERT INTO applications values(@name, @creation_dt)";
 
-            ExecuteSqlCommand(sqlCommand);
+                SqlCommand sqlCommand = new SqlCommand(sqlString);
+                sqlCommand.Parameters.AddWithValue("@name", app.name);
+                sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
 
-            return Ok();
+                ExecuteSqlCommand(sqlCommand);
+
+                return Ok("Application created successfully");
+            }
+
+            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
         }
 
         // Read Applications
         [Route("")]
         public IHttpActionResult GetApplications()
         {
-            string sqlQuery = "SELECT * FROM applications ORDER BY id";
-            XmlDocument doc = GetSomething(sqlQuery, "Applications");
+            string res_type = VerifyResType();
 
-            HandlerXML handler = new HandlerXML(FILE_PATH, XSD_PATH + "applicationVerification.xsd");
-
-            if (!handler.ValidateXML())
+            if (res_type == "application")
             {
-                return Ok(handler.ValidationMessage);
+                string sqlQuery = "SELECT * FROM applications ORDER BY id";
+                XmlDocument doc = GetSomething(sqlQuery, "Applications");
+
+                HandlerXML handler = new HandlerXML(FILE_PATH, XSD_PATH + "applicationVerification.xsd");
+
+                if (!handler.ValidateXML())
+                {
+                    return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
+                }
+
+                //return Ok(handler.ValidateXML().ToString());
+                return Ok(doc);
             }
 
-            //return Ok(handler.ValidateXML().ToString());
-            return Ok(doc);
+            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
         }
 
         // Read Application by id
         [Route("{id:int}")]
         public IHttpActionResult GetApplicationById(int id)
         {
-            string sqlQuery = "SELECT * FROM applications WHERE id = " + id + " ORDER BY id";
-            XmlDocument doc = GetSomething(sqlQuery, "Applications");
+            string res_type = VerifyResType();
 
-            HandlerXML handler = new HandlerXML(FILE_PATH, XSD_PATH + "applicationVerification.xsd");
-
-            if (!handler.ValidateXML())
+            if (res_type == "application")
             {
-                return Ok(handler.ValidationMessage);
+                string sqlQuery = "SELECT * FROM applications WHERE id = " + id + " ORDER BY id";
+                XmlDocument doc = GetSomething(sqlQuery, "Applications");
+
+                HandlerXML handler = new HandlerXML(FILE_PATH, XSD_PATH + "applicationVerification.xsd");
+
+                if (!handler.ValidateXML())
+                {
+                    return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
+                }
+
+                //return Ok(handler.ValidateXML().ToString());
+                return Ok(doc);
             }
 
-            //return Ok(handler.ValidateXML().ToString());
-            return Ok(doc);
+            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
         }
 
         // Update
         [Route("{id:int}")]
         public IHttpActionResult PutApplication(int id, [FromBody] Application app)
         {
-            Application oldApp = new Application();
+            string res_type = VerifyResType();
 
-            string sqlQuery = "SELECT * FROM applications WHERE id = " + id + " ORDER BY id";
-            XmlDocument doc = GetSomething(sqlQuery, "Applications");
-
-            oldApp.name = doc.SelectSingleNode("//name").InnerText;
-
-            if (app.name != oldApp.name)
+            if (res_type == "application")
             {
-                string sqlString = "UPDATE applications SET name = \'" + app.name + "\' WHERE id = " + id;
+                Application oldApp = new Application();
 
-                SqlCommand sqlCommand = new SqlCommand(sqlString);
+                string sqlQuery = "SELECT * FROM applications WHERE id = " + id + " ORDER BY id";
+                XmlDocument doc = GetSomething(sqlQuery, "Applications");
 
-                ExecuteSqlCommand(sqlCommand);
+                oldApp.name = doc.SelectSingleNode("//name").InnerText;
+
+                if (app.name != oldApp.name)
+                {
+                    string sqlString = "UPDATE applications SET name = \'" + app.name + "\' WHERE id = " + id;
+
+                    SqlCommand sqlCommand = new SqlCommand(sqlString);
+
+                    ExecuteSqlCommand(sqlCommand);
+                }
+
+                return Ok("Application " + id + " updated successfully");
             }
 
-            return Ok();
+            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
         }
 
         // Delete
         [Route("{id:int}")]
         public IHttpActionResult DeleteApplication(int id)
         {
-            DeleteSomething("applications", id);
+            string res_type = VerifyResType();
 
-            return Ok();
+            if (res_type == "application")
+            {
+                DeleteSomething("applications", id);
+
+                return Ok("Application " + id + " deleted successfully");
+            }
+
+            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
         }
 
         // !!!!!!!!!!!!!!!
@@ -126,103 +165,138 @@ namespace SOMIOD.Controllers
         [Route("{application}")]
         public IHttpActionResult PostModule(string application, [FromBody] Module module)
         {
-            /*string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application + "\'";
-            XmlDocument docApplication = GetSomething(sqlQueryGetApplicationID, "Applications");
-            int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);*/
-            int idApplication = VerifyIdOnDB("applications", application);
+            string res_type = VerifyResType();
 
-            string sqlString = "INSERT INTO modules values(@name, @creation_dt, @parent)";
+            if (res_type == "module")
+            {
+                /*string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+                XmlDocument docApplication = GetSomething(sqlQueryGetApplicationID, "Applications");
+                int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);*/
+                int idApplication = VerifyIdOnDB("applications", application);
 
-            SqlCommand sqlCommand = new SqlCommand(sqlString);
-            sqlCommand.Parameters.AddWithValue("@name", module.name);
-            sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
-            sqlCommand.Parameters.AddWithValue("@parent", idApplication);
+                string sqlString = "INSERT INTO modules values(@name, @creation_dt, @parent)";
 
-            System.Diagnostics.Debug.WriteLine(sqlString);
-            ExecuteSqlCommand(sqlCommand);
+                SqlCommand sqlCommand = new SqlCommand(sqlString);
+                sqlCommand.Parameters.AddWithValue("@name", module.name);
+                sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
+                sqlCommand.Parameters.AddWithValue("@parent", idApplication);
 
-            return Ok();
+                System.Diagnostics.Debug.WriteLine(sqlString);
+                ExecuteSqlCommand(sqlCommand);
+
+                return Ok("Module created successfully");
+            }
+
+            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
         }
 
         // Read Modules
         [Route("{application}")]
         public IHttpActionResult GetModules(string application)
         {
-            /*string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application +"\'";
-            XmlDocument docApplication = GetSomething(sqlQueryGetApplicationID, "Applications");
-            int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);*/
-            int idApplication = VerifyIdOnDB("applications", application);
+            string res_type = VerifyResType();
 
-            string sqlQuery = "SELECT * FROM modules WHERE parent = " + idApplication + " ORDER BY id";
-            XmlDocument doc = GetSomething(sqlQuery, "Modules");
-
-            HandlerXML handler = new HandlerXML(FILE_PATH, XSD_PATH + "moduleVerification.xsd");
-
-            if (!handler.ValidateXML())
+            if (res_type == "module")
             {
-                return Ok(handler.ValidationMessage);
+                /*string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application +"\'";
+                XmlDocument docApplication = GetSomething(sqlQueryGetApplicationID, "Applications");
+                int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);*/
+                int idApplication = VerifyIdOnDB("applications", application);
+
+                string sqlQuery = "SELECT * FROM modules WHERE parent = " + idApplication + " ORDER BY id";
+                XmlDocument doc = GetSomething(sqlQuery, "Modules");
+
+                HandlerXML handler = new HandlerXML(FILE_PATH, XSD_PATH + "moduleVerification.xsd");
+
+                if (!handler.ValidateXML())
+                {
+                    return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
+                }
+                return Ok(doc);
             }
 
-            //return Ok(handler.ValidateXML().ToString());
-            return Ok(doc);
+            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
         }
 
         // Read Module by id
         [Route("{application}/{id:int}")]
         public IHttpActionResult GetModuleById(string application, int id)
         {
-            /*string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application + "\'";
-            XmlDocument docApplication = GetSomething(sqlQueryGetApplicationID, "Applications");
-            int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);*/
-            int idApplication = VerifyIdOnDB("applications", application);
+            string res_type = VerifyResType();
 
-            string sqlQuery = "SELECT * FROM modules WHERE id = " + id + " AND parent = " + idApplication + " ORDER BY id";
-            XmlDocument doc = GetSomething(sqlQuery, "Modules");
-
-            HandlerXML handler = new HandlerXML(FILE_PATH, XSD_PATH + "moduleVerification.xsd");
-
-            if (!handler.ValidateXML())
+            if (res_type == "module")
             {
-                return Ok(handler.ValidationMessage);
+                /*string sqlQueryGetApplicationID = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+                XmlDocument docApplication = GetSomething(sqlQueryGetApplicationID, "Applications");
+                int idApplication = Convert.ToInt32(docApplication.SelectSingleNode("//id").InnerText);*/
+                int idApplication = VerifyIdOnDB("applications", application);
+
+                string sqlQuery = "SELECT * FROM modules WHERE id = " + id + " AND parent = " + idApplication + " ORDER BY id";
+                XmlDocument doc = GetSomething(sqlQuery, "Modules");
+
+                HandlerXML handler = new HandlerXML(FILE_PATH, XSD_PATH + "moduleVerification.xsd");
+
+                if (!handler.ValidateXML())
+                {
+                    return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
+                }
+
+                return Ok(doc);
             }
 
-            //return Ok(handler.ValidateXML().ToString());
-            return Ok(doc);
+            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
         }
 
         // Update
-        [Route("{module}/{id:int}")]
+        [Route("{application}/{id:int}")]
         public IHttpActionResult PutModule(int id, [FromBody] Module module)
         {
-            Module oldModule = new Module();
+            string res_type = VerifyResType();
 
-            string sqlQuery = "SELECT * FROM modules WHERE id = " + id + " ORDER BY id";
-            XmlDocument doc = GetSomething(sqlQuery, "Applications");
-
-            oldModule.name = doc.SelectSingleNode("//name").InnerText;
-
-            if (module.name != oldModule.name)
+            if (res_type == "module")
             {
-                string sqlString = "UPDATE modules SET name = \'" + module.name + "\' WHERE id = " + id;
+                Module oldModule = new Module();
 
-                SqlCommand sqlCommand = new SqlCommand(sqlString);
+                string sqlQuery = "SELECT * FROM modules WHERE id = " + id + " ORDER BY id";
+                XmlDocument doc = GetSomething(sqlQuery, "Applications");
 
-                ExecuteSqlCommand(sqlCommand);
+                oldModule.name = doc.SelectSingleNode("//name").InnerText;
+
+                if (module.name != oldModule.name)
+                {
+                    string sqlString = "UPDATE modules SET name = \'" + module.name + "\' WHERE id = " + id;
+
+                    SqlCommand sqlCommand = new SqlCommand(sqlString);
+
+                    ExecuteSqlCommand(sqlCommand);
+                }
+
+                return Ok("Module " + id + " updated successfully");
             }
 
-            return Ok();
+            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
         }
 
         // Delete
         [Route("{application}/{id:int}")]
         public IHttpActionResult DeleteModule(int id)
         {
-            DeleteSomething("modules", id);
+            string res_type = VerifyResType();
 
-            return Ok();
+            if (res_type == "module")
+            {
+                DeleteSomething("modules", id);
+
+                return Ok("Module " + id + " deleted successfully");
+            }
+
+            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
         }
 
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
         // !!! Data & Subscriptions !!!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
         // Create
         [Route("{application}/{module}")]
         // value can be Subscription or Data
@@ -248,6 +322,8 @@ namespace SOMIOD.Controllers
                 System.Diagnostics.Debug.WriteLine(sqlString);
                 ExecuteSqlCommand(sqlCommand);
 
+                return Ok("Module created successfully");
+
             }
             else if (res_type == "subscription")
             {
@@ -262,10 +338,11 @@ namespace SOMIOD.Controllers
 
                 System.Diagnostics.Debug.WriteLine(sqlString);
                 ExecuteSqlCommand(sqlCommand);
+
+                return Ok("Subscription created successfully");
             }
 
-            return Ok(res_type + " created successfully!");
-            //return Ok(docAModule);
+            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
         }
 
         // Read
@@ -284,33 +361,31 @@ namespace SOMIOD.Controllers
             if (res_type == "data")
             {
                 string sqlQuery = "SELECT * FROM data WHERE parent = " + idModule + " ORDER BY id";
-                XmlDocument doc = GetSomething(sqlQuery, "Data");
+                XmlDocument responseXml = GetSomething(sqlQuery, "Data");
 
                 HandlerXML handler = new HandlerXML(FILE_PATH, XSD_PATH + "dataVerification.xsd");
 
                 if (!handler.ValidateXML())
                 {
-                    return Ok(handler.ValidationMessage);
+                    return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
                 }
-
-                return Ok(handler.ValidateXML().ToString());
+                return Ok(responseXml);
             }
             else if (res_type == "subscription")
             {
                 string sqlQuery = "SELECT * FROM subscriptions WHERE parent = " + idModule + " ORDER BY id";
-                XmlDocument doc = GetSomething(sqlQuery, "Subscriptions");
+                XmlDocument responseXml = GetSomething(sqlQuery, "Subscriptions");
 
                 HandlerXML handler = new HandlerXML(FILE_PATH, XSD_PATH + "subscriptionVerification.xsd");
 
                 if (!handler.ValidateXML())
                 {
-                    return Ok(handler.ValidationMessage);
+                    return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
                 }
-
-                return Ok(handler.ValidateXML().ToString());
+                return Ok(responseXml);
             }
 
-            return Ok();
+            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
         }
 
         // Read
@@ -331,14 +406,17 @@ namespace SOMIOD.Controllers
                 string sqlQuery = "SELECT * FROM data WHERE id = " + id + " AND parent = " + idModule + " ORDER BY id";
                 XmlDocument doc = GetSomething(sqlQuery, "Data");
 
+                return Ok(doc);
             }
             else if (res_type == "subscription")
             {
                 string sqlQuery = "SELECT * FROM subscriptions WHERE id = " + id + " AND parent = " + idModule + " ORDER BY id";
                 XmlDocument doc = GetSomething(sqlQuery, "Subscriptions");
+
+                return Ok(doc);
             }
 
-            return Ok();
+            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
         }
 
         // Update
@@ -364,8 +442,10 @@ namespace SOMIOD.Controllers
                     SqlCommand sqlCommand = new SqlCommand(sqlString);
 
                     ExecuteSqlCommand(sqlCommand);
-                }
 
+                    return Ok("Data " + id + " updated successfully");
+                }
+                return Ok("No need for update on data " + id);
             }
             else if (res_type == "subscription")
             {
@@ -376,9 +456,13 @@ namespace SOMIOD.Controllers
 
                 oldSubscription.name = doc.SelectSingleNode("//name").InnerText;
 
+                /*if ()
+                {
+                    return Ok("Subscription " + id + " updated successfully");
+                }*/
+                return Ok("No need for update on subscription " + id);
             }
-
-            return Ok();
+            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
         }
 
         // Delete
@@ -390,13 +474,17 @@ namespace SOMIOD.Controllers
             if (res_type == "data")
             {
                 DeleteSomething("data", id);
+
+                return Ok("Data " + id + " deleted successfully");
             }
             else if (res_type == "subscription")
             {
                 DeleteSomething("subscriptions", id);
+
+                return Ok("Subscription " + id + " deleted successfully");
             }
 
-            return Ok();
+            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
         }
 
 
@@ -647,11 +735,18 @@ namespace SOMIOD.Controllers
         public int VerifyIdOnDB (string table, string verification)
         {
             string sqlQueryGetApplicationID = "SELECT * FROM " + table + " WHERE name = \'" + verification + "\'";
+
             XmlDocument doc = GetSomething(sqlQueryGetApplicationID, "Applications");
 
-            int id = Convert.ToInt32(doc.SelectSingleNode("//id").InnerText);
+            if (doc.SelectSingleNode("//id").InnerText == string.Empty)
+            {
+                return 0;
+            } else
+            {
+                int id = Convert.ToInt32(doc.SelectSingleNode("//id").InnerText);
 
-            return id;
+                return id;
+            }
         }
     }
 }
