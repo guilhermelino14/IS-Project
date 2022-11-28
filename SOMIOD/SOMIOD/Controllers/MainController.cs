@@ -27,12 +27,14 @@ namespace SOMIOD.Controllers
     [RoutePrefix("api/somiod")]
     public class MainController : ApiController
     {
+        
         public static string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["SOMIOD.Properties.Settings.ConnStr"].ConnectionString;
-
-        public static string FILE_PATH = "C:\\Users\\Guilherme Lino\\Desktop\\IPL\\IS\\IS-Project\\response.xml";
-        public static string XSD_PATH = "C:\\Users\\Guilherme Lino\\Desktop\\IPL\\IS\\IS-Project\\SOMIOD\\SOMIOD\\App_Data\\";
+        //public static string FILE_PATH = "C:\\Users\\Guilherme Lino\\Desktop\\IPL\\IS\\IS-Project\\response.xml";
+        //public static string XSD_PATH = "C:\\Users\\Guilherme Lino\\Desktop\\IPL\\IS\\IS-Project\\SOMIOD\\SOMIOD\\App_Data\\";
         //public static string FILE_PATH = "C:\\Users\\marco\\Desktop\\GitHub\\IS-Project\\response.xml";
         //public static string XSD_PATH = "C:\\Users\\marco\\Desktop\\GitHub\\IS-Project\\SOMIOD\\SOMIOD\\App_Data\\";
+        public static string FILE_PATH = AppDomain.CurrentDomain.BaseDirectory.ToString() + "\\response.xml";
+        public static string XSD_PATH = HttpContext.Current.Server.MapPath("~/App_Data/");
 
         // !!!!!!!!!!!!!!!!!!!!
         // !!! Applications !!!
