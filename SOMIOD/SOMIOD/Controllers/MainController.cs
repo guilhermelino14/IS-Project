@@ -80,7 +80,7 @@ namespace SOMIOD.Controllers
                     return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
                 }
 
-                return Ok(doc);
+                return Ok(doc.SelectSingleNode("/Applications").OuterXml);
             }
 
             return Content(HttpStatusCode.BadRequest, "Invalid res_type");
