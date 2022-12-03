@@ -31,24 +31,24 @@ namespace SOMIOD.Controllers
                 {
                     switch (type)
                     {
-                        case ("Applications"):
+                        case ("applications"):
                             Application app = DbMethods.FillApplication(reader);
-                            root.AppendChild(CreateApplication(doc, app.id, app.name, app.creation_dt, "Application"));
+                            root.AppendChild(CreateApplication(doc, app.id, app.name, app.creation_dt, "application"));
                             break;
-                        case ("Modules"):
+                        case ("aodules"):
                             Module mod = DbMethods.FillModule(reader);
-                            root.AppendChild(CreateModule(doc, mod.id, mod.name, mod.creation_dt, mod.parent, "Module"));
+                            root.AppendChild(CreateModule(doc, mod.id, mod.name, mod.creation_dt, mod.parent, "module"));
                             break;
-                        case ("Data"):
+                        case ("data"):
                             Data data = DbMethods.FillData(reader);
-                            root.AppendChild(CreateData(doc, data.id, data.content, data.creation_dt, data.parent, "Data"));
+                            root.AppendChild(CreateData(doc, data.id, data.content, data.creation_dt, data.parent, "data"));
                             break;
-                        case ("Subscriptions"):
+                        case ("subscriptions"):
                             Subscription sub = DbMethods.FillSubscription(reader);
-                            root.AppendChild(CreateSubscription(doc, sub.id, sub.name, sub.creation_dt, sub.parent, sub.subscription_event, sub.endpoint, "Subscription"));
+                            root.AppendChild(CreateSubscription(doc, sub.id, sub.name, sub.creation_dt, sub.parent, sub.subscription_event, sub.endpoint, "subscription"));
                             break;
                     }
-                    doc.Save(MainController.FILE_PATH);
+                    doc.Save(MainController.GFILE_PATH);
                 }
 
                 reader.Close();

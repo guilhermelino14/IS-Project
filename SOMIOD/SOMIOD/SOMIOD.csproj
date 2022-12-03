@@ -89,7 +89,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\DbMethods.cs" />
     <Compile Include="Controllers\MainController.cs" />
+    <Compile Include="Controllers\XmlUtils.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
