@@ -88,6 +88,9 @@ namespace SOMIOD.Controllers
         [Route("")]
         public IHttpActionResult GetApplications()
         {
+            brokerUtils.connect();
+            brokerUtils.postMessage("news", "olá olá");
+            //brokerUtils.disconnect();
             string docPath = GetPostXmlPath();
 
             /*HandlerXML handler = new HandlerXML(docPath, XSD_PATH + "applicationVerification.xsd");
