@@ -104,6 +104,7 @@ namespace SOMIOD.Controllers
                     XmlDocument doc = XmlUtils.GetSomething(sqlQuery, "applications");
 
                     return Ok(doc.OuterXml);
+                    //return Ok(doc);
                 }
                 return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + "application ?");
             /*}
@@ -300,10 +301,11 @@ namespace SOMIOD.Controllers
 
                         if (element.GetAttribute("res_type") == "module")
                         {
-                            string sqlQuery = "SELECT * FROM modules WHERE parent = " + idApplication + " ORDER BY id";
-                            XmlDocument doc = XmlUtils.GetSomething(sqlQuery, "modules");
+                            //string sqlQuery = "SELECT * FROM modules WHERE parent = " + idApplication + " ORDER BY id";
+                            //XmlDocument doc = XmlUtils.GetSomething(sqlQuery, "modules");
 
-                            return Ok(doc.OuterXml);
+                            //return Ok(doc.OuterXml);
+                            return Ok();
                         }
                     return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + "module ?");
                 /*}
