@@ -3,16 +3,6 @@
   <application>
     <id>1</id>
     <name>AppA</name>
-    <creation_dt>2022-11-07 01:27:35</creation_dt>
-  </application>
-  <application>
-    <id>2</id>
-    <name>App - B</name>
-    <creation_dt>2022-11-07 01:27:43</creation_dt>
-  </application>
-  <application>
-    <id>3</id>
-    <name>ModuleA</name>
-    <creation_dt>2022-11-07 01:31:08</creation_dt>
+    <creation_dt>2022-12-06 01:04:42</creation_dt>
   </application>
 </applications>

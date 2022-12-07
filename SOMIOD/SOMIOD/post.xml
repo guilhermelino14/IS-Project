@@ -1,5 +1,6 @@
-<?xml version="1.0"?>
-<application res_type = "application">
-  <id>4</id>
-  <name>AppTeste</name>
-</application>
+<?xml version="1.0" encoding="UTF-8"?>
+<module res_type="module">
+   <id>1</id>
+   <name>ModuleA</name>
+   <parent>1</parent>
+</module>
