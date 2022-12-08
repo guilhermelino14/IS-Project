@@ -45,7 +45,6 @@ namespace SOMIOD.Controllers
         // Create
         [Route("")]
         public IHttpActionResult PostApplication()
-        //public IHttpActionResult PostApplication([FromBody] XmlDocument doc)
         {
             GetXmlFromStream();
 
@@ -88,28 +87,15 @@ namespace SOMIOD.Controllers
         [Route("")]
         public IHttpActionResult GetApplications()
         {
-            GetXmlFromStream();
+            string sqlQuery = "SELECT * FROM applications ORDER BY id";
+            XmlDocument doc = XmlUtils.GetSomething(sqlQuery, "applications");
 
-            /*HandlerXML handler = new HandlerXML(docPath, XSD_PATH + "applicationVerification.xsd");
+            if (doc.SelectSingleNode("//application") == null)
+            {
+                return Content(HttpStatusCode.BadRequest, "No applications available");
+            }
 
-            if (handler.ValidateXML())
-            {*/
-                XmlDocument rcvDoc = new XmlDocument();
-                rcvDoc.Load(RECEIVED_FILE_PATH);
-                XmlElement element = rcvDoc.DocumentElement;
-
-                if (element.GetAttribute("res_type") == "application")
-                {
-                    string sqlQuery = "SELECT * FROM applications ORDER BY id";
-                    XmlDocument doc = XmlUtils.GetSomething(sqlQuery, "applications");
-
-                    return Ok(doc.OuterXml);
-                    //return Ok(doc);
-                }
-                return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + "application ?");
-            /*}
-            return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
-            */
+            return Ok(doc.OuterXml);
         }
 
         // Read Application by id
@@ -120,34 +106,15 @@ namespace SOMIOD.Controllers
 
             if (DbMethods.VerifyOnDB(sqlQueryAppId, "applications") == id)
             {
-                GetXmlFromStream();
+                XmlDocument doc = XmlUtils.GetSomething(sqlQueryAppId, "applications");
 
-                /*HandlerXML handler = new HandlerXML(docPath, XSD_PATH + "applicationVerification.xsd");
-
-                if (handler.ValidateXML())
-                {*/
-                    XmlDocument rcvDoc = new XmlDocument();
-                    rcvDoc.Load(RECEIVED_FILE_PATH);
-                    XmlElement element = rcvDoc.DocumentElement;
-
-                    if (element.GetAttribute("res_type") == "application")
-                    {
-                        //string sqlQuery = "SELECT * FROM applications WHERE id = " + id + " ORDER BY id";
-                        XmlDocument doc = XmlUtils.GetSomething(sqlQueryAppId, "applications");
-
-                        return Ok(doc.OuterXml);
-                    }
-                    return Content(HttpStatusCode.BadRequest, "Invalid res_type");
-                /*}
-                return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
-                */
+                return Ok(doc.OuterXml);
             }
             return Content(HttpStatusCode.BadRequest, "Application " + id + " doesn't exist");
         }
 
         // Update
         [Route("{id:int}")]
-        //public IHttpActionResult PutApplication(int id, [FromBody] Application app)
         public IHttpActionResult PutApplication(int id)
         {
             string sqlQueryAppId = "SELECT * FROM applications WHERE id = " + id + " ORDER BY id";
@@ -199,26 +166,8 @@ namespace SOMIOD.Controllers
             string sqlQueryAppId = "SELECT * FROM applications WHERE id = " + id + " ORDER BY id";
             if (DbMethods.VerifyOnDB(sqlQueryAppId, "applications") == id)
             {
-                GetXmlFromStream();
-
-                /*HandlerXML handler = new HandlerXML(docPath, XSD_PATH + "applicationVerification.xsd");
-
-                if (handler.ValidateXML())
-                {*/
-                    XmlDocument rcvDoc = new XmlDocument();
-                    rcvDoc.Load(RECEIVED_FILE_PATH);
-                    XmlElement element = rcvDoc.DocumentElement;
-
-                    if (element.GetAttribute("res_type") == "application")
-                    {
-                        DbMethods.DeleteSomething("applications", id);
-
-                        return Ok("Application " + id + " deleted successfully");
-                    }
-                    return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + "application ?");
-                /*}
-                return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
-                */
+                DbMethods.DeleteSomething("applications", id);
+                return Ok("Application " + id + " deleted successfully");
             }
             return Content(HttpStatusCode.BadRequest, "Application " + id + " doesn't exist");
         }
@@ -229,7 +178,6 @@ namespace SOMIOD.Controllers
 
         // Create
         [Route("{application}")]
-        //public IHttpActionResult PostModule(string application, [FromBody] Module module)
         public IHttpActionResult PostModule(string application)
         {
             string sqlQueryAppIdFromName = "SELECT * FROM applications WHERE name = \'" + application + "\'";
@@ -288,29 +236,17 @@ namespace SOMIOD.Controllers
         {
             string sqlQueryAppIdFromName = "SELECT * FROM applications WHERE name = \'" + application + "\'";
             int applicationId = DbMethods.VerifyOnDB(sqlQueryAppIdFromName, "applications");
+
             if (applicationId != 0)
             {
-                GetXmlFromStream();
+                string sqlQuery = "SELECT * FROM modules WHERE parent = " + applicationId + " ORDER BY id";
+                XmlDocument doc = XmlUtils.GetSomething(sqlQuery, "modules");
 
-                /*HandlerXML handler = new HandlerXML(docPath, XSD_PATH + "applicationVerification.xsd");
-
-                if (handler.ValidateXML())
-                {*/
-                        XmlDocument rcvDoc = new XmlDocument();
-                        rcvDoc.Load(RECEIVED_FILE_PATH);
-                        XmlElement element = rcvDoc.DocumentElement;
-
-                        if (element.GetAttribute("res_type") == "module")
-                        {
-                            string sqlQuery = "SELECT * FROM modules WHERE parent = " + applicationId + " ORDER BY id";
-                            XmlDocument doc = XmlUtils.GetSomething(sqlQuery, "modules");
-
-                            return Ok(doc.OuterXml);
-                        }
-                    return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + "module ?");
-                /*}
-                return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
-                */
+                if (doc.SelectSingleNode("//module") == null)
+                {
+                    return Content(HttpStatusCode.BadRequest, "No modules available");
+                }
+                return Ok(doc.OuterXml);
             }
             return Content(HttpStatusCode.BadRequest, "Application " + application + " doesn't exist");
         }
@@ -320,41 +256,24 @@ namespace SOMIOD.Controllers
         public IHttpActionResult GetModuleById(string application, int id)
         {
             string sqlQueryAppIdFromName = "SELECT * FROM applications WHERE name = \'" + application + "\'";
-            if (DbMethods.VerifyOnDB(sqlQueryAppIdFromName, "applications") != 0)
+            int parentId = DbMethods.VerifyOnDB(sqlQueryAppIdFromName, "applications");
+
+            if (parentId != 0)
             {
-                GetXmlFromStream();
+                string sqlQueryModuleId = "SELECT * FROM modules WHERE id = " + id + " AND parent = " + parentId + " ORDER BY id";
+                if (DbMethods.VerifyOnDB(sqlQueryModuleId, "modules") == id)
+                {
+                    XmlDocument doc = XmlUtils.GetSomething(sqlQueryModuleId, "modules");
 
-                /*HandlerXML handler = new HandlerXML(docPath, XSD_PATH + "applicationVerification.xsd");
-
-                if (handler.ValidateXML())
-                {*/
-                    XmlDocument rcvDoc = new XmlDocument();
-                    rcvDoc.Load(RECEIVED_FILE_PATH);
-                    XmlElement element = rcvDoc.DocumentElement;
-
-                    if (element.GetAttribute("res_type") == "module")
-                    {
-                        int parentId = Convert.ToInt32(rcvDoc.SelectSingleNode("//parent").InnerText);
-                        string sqlQueryModuleId = "SELECT * FROM modules WHERE id = " + id + " AND parent = " + parentId + " ORDER BY id";
-                        if (DbMethods.VerifyOnDB(sqlQueryModuleId, "modules") == id)
-                        {
-                            XmlDocument doc = XmlUtils.GetSomething(sqlQueryModuleId, "modules");
-
-                            return Ok(doc.OuterXml);
-                        }
-                        return Content(HttpStatusCode.BadRequest, "Module " + id + "doesn't exist on " + application);
-                    }
-                    return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + "module ?");
-                /*}
-                return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
-                */
+                    return Ok(doc.OuterXml);
+                }
+                return Content(HttpStatusCode.BadRequest, "Module " + id + "doesn't exist on " + application);
             }
             return Content(HttpStatusCode.BadRequest, "Application " + application + " doesn't exist");
         }
 
         // Update
         [Route("{application}/{id:int}")]
-        //public IHttpActionResult PutModule(string application, int id, [FromBody] Module module)
         public IHttpActionResult PutModule(string application, int id)
         {
             string sqlQueryAppIdFromName = "SELECT * FROM applications WHERE name = \'" + application + "\'";
@@ -411,32 +330,20 @@ namespace SOMIOD.Controllers
         [Route("{application}/{id:int}")]
         public IHttpActionResult DeleteModule(string application, int id)
         {
-            GetXmlFromStream();
-
-            /*HandlerXML handler = new HandlerXML(docPath, XSD_PATH + "applicationVerification.xsd");
-
-            if (handler.ValidateXML())
-            {*/
                 string sqlQueryAppId = "SELECT * FROM applications WHERE name = \'" + application + "\'";
                 int idApplication = DbMethods.VerifyOnDB(sqlQueryAppId, "applications");
 
                 if (idApplication != 0)
                 {
-                    XmlDocument rcvDoc = new XmlDocument();
-                    rcvDoc.Load(RECEIVED_FILE_PATH);
-                    XmlElement element = rcvDoc.DocumentElement;
-
-                    if (element.GetAttribute("res_type") == "module")
+                    string sqlQueryModuleId = "SELECT * FROM modules WHERE id = " + id + " AND parent = " + idApplication + " ORDER BY id";
+                    if (DbMethods.VerifyOnDB(sqlQueryModuleId, "modules") == id)
                     {
                         DbMethods.DeleteSomething("modules", id);
-
                         return Ok("Module " + id + " deleted successfully");
                     }
-                    return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + "module ?");
+                    return Content(HttpStatusCode.BadRequest, "Module " + id + "does not exist on " + application); 
                 }
                 return Content(HttpStatusCode.BadRequest, application + " does not exist");
-            /*}
-            return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);*/
         }
 
         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -460,6 +367,11 @@ namespace SOMIOD.Controllers
                 if (moduleId != 0)
                 {
                     GetXmlFromStream();
+
+                    /*if ()
+                    {
+
+                    }*/
 
                     XmlDocument rcvDoc = new XmlDocument();
                     rcvDoc.Load(RECEIVED_FILE_PATH);
@@ -533,39 +445,30 @@ namespace SOMIOD.Controllers
         [Route("{application}/{module}/{id:int}")]
         public IHttpActionResult DeleteSubModule(string application, string module, int id)
         {
-            //string res_type = VerifyResType();
-            string res_type = "";
+            string sqlQueryAppIdFromName = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+            int applicationId = DbMethods.VerifyOnDB(sqlQueryAppIdFromName, "applications");
 
-            string sqlQueryAppId = "SELECT * FROM applications WHERE name = \'" + application + "\'";
-            int idApplication = DbMethods.VerifyOnDB(sqlQueryAppId, "applications");
-
-            if (idApplication == 0)
+            if (applicationId != 0)
             {
-                return Content(HttpStatusCode.BadRequest, application + " does not exist");
+                string sqlQueryModuleIdFromName = "SELECT * FROM applications WHERE name = \'" + module + "\' AND parent = " + applicationId;
+                int moduleId = DbMethods.VerifyOnDB(sqlQueryModuleIdFromName, "applications");
+
+                if (moduleId != 0)
+                {
+                    /*if (res_type == "data")
+                    {
+                        DbMethods.DeleteSomething("data", id);
+                        return Ok("Data " + id + " deleted successfully");
+                    }
+                    else if (res_type == "subscription")
+                    {
+                        DbMethods.DeleteSomething("subscriptions", id);
+                        return Ok("Subscription " + id + " deleted successfully");
+                    }*/
+                }
+                return Content(HttpStatusCode.BadRequest, module + " does not exist within " + application);
             }
-
-            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' AND parent = " + idApplication;
-            int idModule = DbMethods.VerifyOnDB(sqlQueryModuleId, "modules");
-
-            if (idModule == 0)
-            {
-                return Content(HttpStatusCode.BadRequest, module + " does not exist on " + application);
-            }
-
-            if (res_type == "data")
-            {
-                DbMethods.DeleteSomething("data", id);
-
-                return Ok("Data " + id + " deleted successfully");
-            }
-            else if (res_type == "subscription")
-            {
-                DbMethods.DeleteSomething("subscriptions", id);
-
-                return Ok("Subscription " + id + " deleted successfully");
-            }
-
-            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
+            return Content(HttpStatusCode.BadRequest, application + " does not exist");
         }
 
 
