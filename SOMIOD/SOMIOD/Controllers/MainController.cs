@@ -233,9 +233,9 @@ namespace SOMIOD.Controllers
         public IHttpActionResult PostModule(string application)
         {
             string sqlQueryAppIdFromName = "SELECT * FROM applications WHERE name = \'" + application + "\'";
-            int appId = DbMethods.VerifyOnDB(sqlQueryAppIdFromName, "applications");
+            int applicationId = DbMethods.VerifyOnDB(sqlQueryAppIdFromName, "applications");
 
-            if (appId != 0)
+            if (applicationId != 0)
             {
                 GetXmlFromStream();
 
@@ -250,7 +250,7 @@ namespace SOMIOD.Controllers
                     if (element.GetAttribute("res_type") == "module")
                     {
                         int parentId = Convert.ToInt32(rcvDoc.SelectSingleNode("//parent").InnerText);
-                        if (appId == parentId)
+                        if (applicationId == parentId)
                         {
                             int moduleId = Convert.ToInt32(rcvDoc.SelectSingleNode("//id").InnerText);
 
@@ -287,7 +287,8 @@ namespace SOMIOD.Controllers
         public IHttpActionResult GetModules(string application)
         {
             string sqlQueryAppIdFromName = "SELECT * FROM applications WHERE name = \'" + application + "\'";
-            if (DbMethods.VerifyOnDB(sqlQueryAppIdFromName, "applications") != 0)
+            int applicationId = DbMethods.VerifyOnDB(sqlQueryAppIdFromName, "applications");
+            if (applicationId != 0)
             {
                 GetXmlFromStream();
 
@@ -301,11 +302,10 @@ namespace SOMIOD.Controllers
 
                         if (element.GetAttribute("res_type") == "module")
                         {
-                            //string sqlQuery = "SELECT * FROM modules WHERE parent = " + idApplication + " ORDER BY id";
-                            //XmlDocument doc = XmlUtils.GetSomething(sqlQuery, "modules");
+                            string sqlQuery = "SELECT * FROM modules WHERE parent = " + applicationId + " ORDER BY id";
+                            XmlDocument doc = XmlUtils.GetSomething(sqlQuery, "modules");
 
-                            //return Ok(doc.OuterXml);
-                            return Ok();
+                            return Ok(doc.OuterXml);
                         }
                     return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + "module ?");
                 /*}
@@ -446,60 +446,87 @@ namespace SOMIOD.Controllers
         // Create
         [Route("{application}/{module}")]
         // value can be Subscription or Data
-        public IHttpActionResult PostSubModule(string application, string module, [FromBody] Subscription model)
+        //public IHttpActionResult PostSubModule(string application, string module, [FromBody] Subscription model)
+        public IHttpActionResult PostSubModule(string application, string module)
         {
-            //string res_type = VerifyResType();
-            string res_type = "";
+            string sqlQueryAppIdFromName = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+            int applicationId = DbMethods.VerifyOnDB(sqlQueryAppIdFromName, "applications");
 
-            string sqlQueryAppId = "SELECT * FROM applications WHERE name = \'" + application + "\'";
-            int idApplication = DbMethods.VerifyOnDB(sqlQueryAppId, "applications");
-
-            if (idApplication == 0)
+            if (applicationId != 0)
             {
-                return Content(HttpStatusCode.BadRequest, application + " does not exist");
+                string sqlQueryModuleIdFromName = "SELECT * FROM applications WHERE name = \'" + module + "\' AND parent = " + applicationId;
+                int moduleId = DbMethods.VerifyOnDB(sqlQueryModuleIdFromName, "applications");
+
+                if (moduleId != 0)
+                {
+                    GetXmlFromStream();
+
+                    XmlDocument rcvDoc = new XmlDocument();
+                    rcvDoc.Load(RECEIVED_FILE_PATH);
+                    XmlElement element = rcvDoc.DocumentElement;
+
+                    int parentId = Convert.ToInt32(rcvDoc.SelectSingleNode("//parent").InnerText);
+                    if (parentId == moduleId)
+                    {
+                        if (element.GetAttribute("res_type") == "data")
+                        {
+                            int dataId = Convert.ToInt32(rcvDoc.SelectSingleNode("//id").InnerText);
+
+                            string sqlQuery = "SELECT * FROM data WHERE id = " + dataId + " ORDER BY id";
+                            if (DbMethods.VerifyOnDB(sqlQuery, "data") != dataId)
+                            {
+                                string dataContent = rcvDoc.SelectSingleNode("//content").InnerText;
+
+                                string sqlString = "INSERT INTO data values(@id, @content, @creation_dt, @parent)";
+
+                                SqlCommand sqlCommand = new SqlCommand(sqlString);
+                                sqlCommand.Parameters.AddWithValue("@id", dataId);
+                                sqlCommand.Parameters.AddWithValue("@content", dataContent);
+                                sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
+                                sqlCommand.Parameters.AddWithValue("@parent", parentId);
+
+                                System.Diagnostics.Debug.WriteLine(sqlString);
+                                DbMethods.ExecuteSqlCommand(sqlCommand);
+
+                                return Ok("Module created successfully");
+                            }
+                            return Content(HttpStatusCode.BadRequest, "Data " + dataId + " already exists");
+                        }
+                        else if (element.GetAttribute("res_type") == "subscription")
+                        {
+                            int subcriptionId = Convert.ToInt32(rcvDoc.SelectSingleNode("//id").InnerText);
+
+                            string sqlQuery = "SELECT * FROM subcriptions WHERE id = " + subcriptionId + " ORDER BY id";
+                            if (DbMethods.VerifyOnDB(sqlQuery, "subcriptions") != subcriptionId)
+                            {
+                                string subscriptionName = rcvDoc.SelectSingleNode("//name").InnerText;
+                                string subscriptionEvent = rcvDoc.SelectSingleNode("//event").InnerText;
+                                string subscriptionEnpoint = rcvDoc.SelectSingleNode("//endpoint").InnerText;
+
+                                string sqlString = "INSERT INTO subscriptions values(@id, @name, @creation_dt, @parent, @event, @endpoint)";
+
+                                SqlCommand sqlCommand = new SqlCommand(sqlString);
+                                sqlCommand.Parameters.AddWithValue("@id", subcriptionId);
+                                sqlCommand.Parameters.AddWithValue("@name", subscriptionName);
+                                sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
+                                sqlCommand.Parameters.AddWithValue("@parent", parentId);
+                                sqlCommand.Parameters.AddWithValue("@event", subscriptionEvent);
+                                sqlCommand.Parameters.AddWithValue("@endpoint", subscriptionEnpoint);
+
+                                System.Diagnostics.Debug.WriteLine(sqlString);
+                                DbMethods.ExecuteSqlCommand(sqlCommand);
+
+                                return Ok("Subscription created successfully");
+                            }
+                            return Content(HttpStatusCode.BadRequest, "Subcription " + subcriptionId + " already exists");
+                        }
+                        return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + " do you mean data or subscription ?");
+                    }
+                    return Content(HttpStatusCode.BadRequest, "parent = " + parentId + " != module = " + moduleId);
+                }
+                return Content(HttpStatusCode.BadRequest, module + " does not exist within " + application);
             }
-
-            string sqlQueryModuleId = "SELECT * FROM modules WHERE name = \'" + module + "\' AND parent = " + idApplication;
-            int idModule = DbMethods.VerifyOnDB(sqlQueryModuleId, "modules");
-
-            if (idModule == 0)
-            {
-                return Content(HttpStatusCode.BadRequest, module + " does not exist on " + application);
-            }
-
-            if (res_type == "data")
-            {
-                string sqlString = "INSERT INTO data values(@content, @creation_dt, @parent)";
-
-                SqlCommand sqlCommand = new SqlCommand(sqlString);
-                sqlCommand.Parameters.AddWithValue("@content", model.name);
-                sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
-                sqlCommand.Parameters.AddWithValue("@parent", idModule);
-
-                System.Diagnostics.Debug.WriteLine(sqlString);
-                DbMethods.ExecuteSqlCommand(sqlCommand);
-
-                return Ok("Module created successfully");
-
-            }
-            else if (res_type == "subscription")
-            {
-                string sqlString = "INSERT INTO subscriptions values(@name, @creation_dt, @parent, @event, @endpoint)";
-
-                SqlCommand sqlCommand = new SqlCommand(sqlString);
-                sqlCommand.Parameters.AddWithValue("@name", model.name);
-                sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
-                sqlCommand.Parameters.AddWithValue("@parent", idModule);
-                sqlCommand.Parameters.AddWithValue("@event", model.subscription_event);
-                sqlCommand.Parameters.AddWithValue("@endpoint", model.endpoint);
-
-                System.Diagnostics.Debug.WriteLine(sqlString);
-                DbMethods.ExecuteSqlCommand(sqlCommand);
-
-                return Ok("Subscription created successfully");
-            }
-
-            return Content(HttpStatusCode.BadRequest, "Invalid res_type");
+            return Content(HttpStatusCode.BadRequest, application + " does not exist");
         }
 
         // Delete
