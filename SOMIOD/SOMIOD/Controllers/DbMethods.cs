@@ -35,8 +35,19 @@ namespace SOMIOD.Controllers
             }
         }
 
+        public static void DeleteFromId(string location, int id)
+        {
+            string sqlString = "DELETE FROM " + location + " WHERE id = " + id;
+            DeleteSomething(sqlString);
+        }
 
-        public static void DeleteSomething(string location, int id)
+        public static void DeleteFromParent(string location, int parentId)
+        {
+            string sqlString = "DELETE FROM " + location + " WHERE parent = " + parentId;
+            DeleteSomething(sqlString);
+        }
+
+        public static void DeleteSomething(string sqlString)
         {
             SqlConnection sqlConnection = null;
 
@@ -45,8 +56,7 @@ namespace SOMIOD.Controllers
                 sqlConnection = new SqlConnection(MainController.connectionString);
                 sqlConnection.Open();
 
-                string str = "DELETE FROM " + location + " WHERE id = " + id;
-                SqlCommand command = new SqlCommand(str, sqlConnection);
+                SqlCommand command = new SqlCommand(sqlString, sqlConnection);
 
                 int nrows = command.ExecuteNonQuery();
                 sqlConnection.Close();
@@ -110,10 +120,9 @@ namespace SOMIOD.Controllers
             return subscription;
         }
 
-        public static int VerifyOnDB(string sqlQuery, string type)
+        public static int GetId(string sqlQuery, string type)
         {
             XmlDocument doc = XmlUtils.GetSomething(sqlQuery, type);
-            System.Diagnostics.Debug.WriteLine(doc.SelectSingleNode("//id"));
 
             if (doc.SelectSingleNode("//id") == null)
             {
@@ -121,8 +130,21 @@ namespace SOMIOD.Controllers
             }
 
             int id = Convert.ToInt32(doc.SelectSingleNode("//id").InnerText);
-            System.Diagnostics.Debug.WriteLine(id);
             return id;
         }
+
+        public static string GetName(string sqlQuery, string type)
+        {
+            XmlDocument doc = XmlUtils.GetSomething(sqlQuery, type);
+
+            if (doc.SelectSingleNode("//name") == null)
+            {
+                return null;
+            }
+
+            string name = doc.SelectSingleNode("//name").InnerText;
+            return name;
+        }
+
     }
 }
