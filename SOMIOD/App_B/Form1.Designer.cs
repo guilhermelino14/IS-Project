@@ -50,6 +50,7 @@
             this.offButton.TabIndex = 1;
             this.offButton.Text = "OFF";
             this.offButton.UseVisualStyleBackColor = true;
+            this.offButton.Click += new System.EventHandler(this.offButton_Click);
             // 
             // Form1
             // 

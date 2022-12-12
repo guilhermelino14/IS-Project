@@ -18,6 +18,7 @@ namespace App_B
     {
         string app = "AppA";
         string module = "ModuleA";
+        int id = 10;
         public Form1()
         {
             InitializeComponent();
@@ -25,8 +26,14 @@ namespace App_B
 
         private void onButton_Click(object sender, EventArgs e)
         {
-            string url = "http://localhost:50768//api/somiod/"+app+"/"+module;
-            string xml = "<data res_type=\"data\">\r\n    <id>7</id>\r\n    <content>ON</content>\r\n    <parent>1</parent>\r\n</data>";
+            
+            sendRequest("ON");
+        }
+
+        private void sendRequest(string type)
+        {
+            string url = "http://localhost:50768//api/somiod/" + app + "/" + module;
+            string xml = "<data res_type=\"data\">\r\n    <id>" + id + "</id>\r\n    <content>"+type+"</content>\r\n    <parent>1</parent>\r\n</data>";
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             byte[] bytes;
@@ -45,6 +52,11 @@ namespace App_B
                 string responseStr = new StreamReader(responseStream).ReadToEnd();
                 MessageBox.Show(responseStr);
             }
+        }
+
+        private void offButton_Click(object sender, EventArgs e)
+        {
+            sendRequest("OFF");
         }
     }
 }
