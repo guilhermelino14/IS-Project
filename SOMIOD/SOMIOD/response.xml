@@ -1,15 +1,8 @@
 <?xml version="1.0"?>
-<data>
-  <data>
+<applications>
+  <application>
     <id>1</id>
-    <content>DataAA</content>
-    <creation_dt>2022-12-10 02:24:23</creation_dt>
-    <parent>1</parent>
-  </data>
-  <data>
-    <id>2</id>
-    <content>DataAB</content>
-    <creation_dt>2022-12-10 02:24:31</creation_dt>
-    <parent>1</parent>
-  </data>
-</data>
+    <name>ModuleA</name>
+    <creation_dt>2022-12-10 02:24:14</creation_dt>
+  </application>
+</applications>

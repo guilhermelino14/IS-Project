@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <data res_type="data">
-   <id>2</id>
-   <content>DataAB</content>
-   <parent>1</parent>
+    <id>7</id>
+    <content>"ON"</content>
+    <parent>1</parent>
 </data>
