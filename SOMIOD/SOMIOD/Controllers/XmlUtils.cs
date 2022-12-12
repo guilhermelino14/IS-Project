@@ -6,7 +6,10 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Web;
+using System.Web.UI.WebControls;
 using System.Xml;
+using static System.Net.Mime.MediaTypeNames;
+using Application = SOMIOD.Models.Application;
 
 namespace SOMIOD.Controllers
 {
@@ -35,7 +38,7 @@ namespace SOMIOD.Controllers
                             Application app = DbMethods.FillApplication(reader);
                             root.AppendChild(CreateApplication(doc, app.id, app.name, app.creation_dt, "application"));
                             break;
-                        case ("aodules"):
+                        case ("modules"):
                             Module mod = DbMethods.FillModule(reader);
                             root.AppendChild(CreateModule(doc, mod.id, mod.name, mod.creation_dt, mod.parent, "module"));
                             break;
@@ -48,7 +51,7 @@ namespace SOMIOD.Controllers
                             root.AppendChild(CreateSubscription(doc, sub.id, sub.name, sub.creation_dt, sub.parent, sub.subscription_event, sub.endpoint, "subscription"));
                             break;
                     }
-                    doc.Save(MainController.GFILE_PATH);
+                    doc.Save(MainController.RESPONSE_FILE_PATH);
                 }
 
                 reader.Close();
@@ -65,8 +68,6 @@ namespace SOMIOD.Controllers
 
             return doc;
         }
-
-
 
         public static XmlDocument CreateXML()
         {
@@ -143,9 +144,5 @@ namespace SOMIOD.Controllers
 
             return subscription;
         }
-
-
-
-        
     }
 }
