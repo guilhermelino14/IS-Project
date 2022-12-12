@@ -26,7 +26,7 @@ namespace App_B
         private void onButton_Click(object sender, EventArgs e)
         {
             string url = "http://localhost:50768//api/somiod/"+app+"/"+module;
-            string xml = "<data res_type=\"data\">\r\n    <id>7</id>\r\n    <content>\"ON\"</content>\r\n    <parent>1</parent>\r\n</data>";
+            string xml = "<data res_type=\"data\">\r\n    <id>7</id>\r\n    <content>ON</content>\r\n    <parent>1</parent>\r\n</data>";
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             byte[] bytes;
