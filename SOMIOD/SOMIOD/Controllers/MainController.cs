@@ -33,8 +33,8 @@ namespace SOMIOD.Controllers
     {
         
         public static string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["SOMIOD.Properties.Settings.ConnStr"].ConnectionString;
-        public static string RESPONSE_FILE_PATH = AppDomain.CurrentDomain.BaseDirectory.ToString() + "\\response.xml";
-        public static string RECEIVED_FILE_PATH = AppDomain.CurrentDomain.BaseDirectory.ToString() + "\\received.xml";
+        public static string RESPONSE_FILE_PATH = AppDomain.CurrentDomain.BaseDirectory.ToString() + "\\get.xml";
+        public static string RECEIVED_FILE_PATH = AppDomain.CurrentDomain.BaseDirectory.ToString() + "\\post.xml";
         public static string XSD_PATH = HttpContext.Current.Server.MapPath("~/App_Data/");
         public static string RES_TYPE_ERROR = "Invalid res_type, did you mean: res_type = ";
 

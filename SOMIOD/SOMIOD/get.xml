@@ -1,8 +1,44 @@
 <?xml version="1.0"?>
-<applications>
-  <application>
+<modules>
+  <module>
     <id>1</id>
-    <name>AppA</name>
-    <creation_dt>2022-12-03 19:23:11</creation_dt>
-  </application>
-</applications>
+    <name>ModuleA</name>
+    <creation_dt>2022-12-10 02:24:14</creation_dt>
+    <parent>1</parent>
+    <data>
+      <data>
+        <id>1</id>
+        <content>DataAA</content>
+        <creation_dt>2022-12-10 02:24:23</creation_dt>
+      </data>
+      <data>
+        <id>2</id>
+        <content>DataAB</content>
+        <creation_dt>2022-12-10 02:24:31</creation_dt>
+      </data>
+      <data>
+        <id>5</id>
+        <content>DataAC</content>
+        <creation_dt>2022-12-14 19:07:40</creation_dt>
+      </data>
+    </data>
+  </module>
+  <module>
+    <id>2</id>
+    <name>ModuleB</name>
+    <creation_dt>2022-12-14 19:00:10</creation_dt>
+    <parent>1</parent>
+    <data>
+      <data>
+        <id>3</id>
+        <content>DataBA</content>
+        <creation_dt>2022-12-14 19:32:09</creation_dt>
+      </data>
+      <data>
+        <id>4</id>
+        <content>DataBB</content>
+        <creation_dt>2022-12-14 19:07:26</creation_dt>
+      </data>
+    </data>
+  </module>
+</modules>

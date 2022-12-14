@@ -8,6 +8,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI.WebControls;
 using System.Xml;
+using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 using Application = SOMIOD.Models.Application;
 
@@ -45,10 +46,6 @@ namespace SOMIOD.Controllers
                         case ("data"):
                             Data data = DbMethods.FillData(reader);
                             root.AppendChild(CreateData(doc, data.id, data.content, data.creation_dt, data.parent, "data"));
-                            break;
-                        case ("subscriptions"):
-                            Subscription sub = DbMethods.FillSubscription(reader);
-                            root.AppendChild(CreateSubscription(doc, sub.id, sub.name, sub.creation_dt, sub.parent, sub.subscription_event, sub.endpoint, "subscription"));
                             break;
                     }
                     doc.Save(MainController.RESPONSE_FILE_PATH);
@@ -106,6 +103,25 @@ namespace SOMIOD.Controllers
 
             module.AppendChild(parentE);
 
+            XmlDocument dataDoc = GetSomething("SELECT * FROM data WHERE parent = " + id, "data");
+            XmlElement dataRootE = doc.CreateElement("data");
+
+            foreach (XmlNode node in dataDoc.SelectNodes("/data//data"))
+            {
+                XmlElement dataE = doc.CreateElement("data");
+                XmlElement dataIdE = doc.CreateElement("id");
+                dataIdE.InnerText = node.SelectSingleNode("id").InnerText;
+                dataE.AppendChild(dataIdE);
+                XmlElement dataContentE = doc.CreateElement("content");
+                dataContentE.InnerText = node.SelectSingleNode("content").InnerText;
+                dataE.AppendChild(dataContentE);
+                XmlElement dataCreationDateE = doc.CreateElement("creation_dt");
+                dataCreationDateE.InnerText = node.SelectSingleNode("creation_dt").InnerText;
+                dataE.AppendChild(dataCreationDateE);
+                dataRootE.AppendChild(dataE);
+            }
+            module.AppendChild(dataRootE);
+
             return module;
         }
 
@@ -119,30 +135,16 @@ namespace SOMIOD.Controllers
             contentE.InnerText = content;
             XmlElement creation_dtE = doc.CreateElement("creation_dt");
             creation_dtE.InnerText = creation_dt;
-            XmlElement parentE = doc.CreateElement("parent");
-            parentE.InnerText = parent.ToString();
+            //XmlElement parentE = doc.CreateElement("parent");
+            //parentE.InnerText = parent.ToString();
 
             data.AppendChild(idE);
             data.AppendChild(contentE);
             data.AppendChild(creation_dtE);
-            data.AppendChild(parentE);
+            //data.AppendChild(parentE);
 
             return data;
         }
 
-        public static XmlElement CreateSubscription(XmlDocument doc, int id, string name, string creation_dt, int parent, string eve, string endpoint, string type)
-        {
-            XmlElement subscription = CreateModule(doc, id, name, creation_dt, parent, type);
-
-            XmlElement eventE = doc.CreateElement("event");
-            eventE.InnerText = eve;
-            XmlElement endpointE = doc.CreateElement("endpoint");
-            endpointE.InnerText = endpoint;
-
-            subscription.AppendChild(eventE);
-            subscription.AppendChild(endpointE);
-
-            return subscription;
-        }
     }
 }
