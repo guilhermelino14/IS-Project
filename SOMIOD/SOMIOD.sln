@@ -5,6 +5,8 @@ VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SOMIOD", "SOMIOD\SOMIOD.csproj", "{A130877E-848C-4358-B304-51B447A6B7FB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App_A", "App_A\App_A.csproj", "{9184C4BB-ECAA-472F-A7ED-C3837CE582EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{A130877E-848C-4358-B304-51B447A6B7FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A130877E-848C-4358-B304-51B447A6B7FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A130877E-848C-4358-B304-51B447A6B7FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9184C4BB-ECAA-472F-A7ED-C3837CE582EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9184C4BB-ECAA-472F-A7ED-C3837CE582EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9184C4BB-ECAA-472F-A7ED-C3837CE582EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9184C4BB-ECAA-472F-A7ED-C3837CE582EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
