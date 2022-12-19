@@ -47,6 +47,10 @@ namespace SOMIOD.Controllers
                             Data data = DbMethods.FillData(reader);
                             root.AppendChild(CreateData(doc, data.id, data.content, data.creation_dt, data.parent, "data"));
                             break;
+                        case ("subscriptions"):
+                            Subscription subscription = DbMethods.FillSubscription(reader);
+                            root.AppendChild(CreateSubscription(doc, subscription.id, subscription.name, subscription.creation_dt, subscription.parent, subscription.subscription_event, subscription.endpoint, "subscription"));
+                            break;
                     }
                     doc.Save(MainController.RESPONSE_FILE_PATH);
                 }
@@ -135,15 +139,33 @@ namespace SOMIOD.Controllers
             contentE.InnerText = content;
             XmlElement creation_dtE = doc.CreateElement("creation_dt");
             creation_dtE.InnerText = creation_dt;
-            //XmlElement parentE = doc.CreateElement("parent");
-            //parentE.InnerText = parent.ToString();
 
             data.AppendChild(idE);
             data.AppendChild(contentE);
             data.AppendChild(creation_dtE);
-            //data.AppendChild(parentE);
 
             return data;
+        }
+
+        public static XmlElement CreateSubscription(XmlDocument doc, int id, string name, string creation_dt, int parent, string sub_event, string endpoint, string type)
+        {
+            XmlElement subscription = CreateApplication(doc, id, name, creation_dt, type);
+
+            XmlElement parentE = doc.CreateElement("parent");
+            parentE.InnerText = parent.ToString();
+            XmlElement creation_dtE = doc.CreateElement("creation_dt");
+            creation_dtE.InnerText = creation_dt;
+            XmlElement eventE = doc.CreateElement("event");
+            eventE.InnerText = sub_event;
+            XmlElement endpointE = doc.CreateElement("endpoint");
+            endpointE.InnerText = endpoint;
+
+            subscription.AppendChild(parentE);
+            subscription.AppendChild(creation_dtE);
+            subscription.AppendChild(eventE);
+            subscription.AppendChild(endpointE);
+
+            return subscription;
         }
 
     }

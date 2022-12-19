@@ -352,7 +352,7 @@ namespace SOMIOD.Controllers
                         DbMethods.DeleteFromId("modules", id); // Delete the module
                         return Ok("Module " + id + " deleted successfully");
                     }
-                    return Content(HttpStatusCode.BadRequest, "Module " + id + "does not exist on " + application); 
+                    return Content(HttpStatusCode.BadRequest, "Module " + id + " does not exist on " + application); 
                 }
                 return Content(HttpStatusCode.BadRequest, application + " does not exist");
         }
@@ -471,13 +471,23 @@ namespace SOMIOD.Controllers
                 {
                     if (type == "data")
                     {
-                        DbMethods.DeleteFromId("data", id);
-                        return Ok("Data " + id + " deleted successfully");
+                        string sqlQueryDataId = "SELECT * FROM data WHERE id = " + id + " AND parent = " + moduleId;
+                        if (id == DbMethods.GetId(sqlQueryDataId,"data"))
+                        {
+                            DbMethods.DeleteFromId("data", id);
+                            return Ok("Data " + id + " deleted successfully");
+                        }
+                        return Content(HttpStatusCode.BadRequest, "Data " + id + " does not exist within " + module);
                     }
                     else if (type == "subscription")
                     {
-                        DbMethods.DeleteFromId("subscriptions", id);
-                        return Ok("Subscription " + id + " deleted successfully");
+                        string sqlQuerySubscriptionId = "SELECT * FROM subscriptions WHERE id = " + id + " AND parent = " + moduleId;
+                        if (id == DbMethods.GetId(sqlQuerySubscriptionId, "subscriptions"))
+                        {
+                            DbMethods.DeleteFromId("subscriptions", id);
+                            return Ok("Subscription " + id + " deleted successfully");
+                        }
+                        return Content(HttpStatusCode.BadRequest, "Subscription " + id + " does not exist within " + module);
                     }
                 }
                 return Content(HttpStatusCode.BadRequest, module + " does not exist within " + application);

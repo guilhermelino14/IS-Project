@@ -134,3 +134,5 @@ C:\Users\Guilherme Lino\Desktop\IPL\IS\IS-Project\SOMIOD\SOMIOD\obj\Debug\SOMIOD
 C:\Users\Guilherme Lino\Desktop\IPL\IS\IS-Project\SOMIOD\SOMIOD\obj\Debug\SOMIOD.pdb
 C:\Users\Guilherme Lino\Desktop\IPL\IS\IS-Project\SOMIOD\SOMIOD\bin\M2Mqtt.Net.dll
 C:\Users\Guilherme Lino\Desktop\IPL\IS\IS-Project\SOMIOD\SOMIOD\bin\M2Mqtt.Net.pdb
+C:\Users\marco\Desktop\GitHub\IS-Project\SOMIOD\SOMIOD\bin\M2Mqtt.Net.dll
+C:\Users\marco\Desktop\GitHub\IS-Project\SOMIOD\SOMIOD\bin\M2Mqtt.Net.pdb
