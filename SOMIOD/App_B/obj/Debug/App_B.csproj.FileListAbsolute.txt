@@ -1,0 +1,11 @@
+C:\Users\Guilherme Lino\Desktop\IPL\IS\IS-Project\SOMIOD\App_B\bin\Debug\App_B.exe.config
+C:\Users\Guilherme Lino\Desktop\IPL\IS\IS-Project\SOMIOD\App_B\bin\Debug\App_B.exe
+C:\Users\Guilherme Lino\Desktop\IPL\IS\IS-Project\SOMIOD\App_B\bin\Debug\App_B.pdb
+C:\Users\Guilherme Lino\Desktop\IPL\IS\IS-Project\SOMIOD\App_B\obj\Debug\App_B.csproj.AssemblyReference.cache
+C:\Users\Guilherme Lino\Desktop\IPL\IS\IS-Project\SOMIOD\App_B\obj\Debug\App_B.csproj.SuggestedBindingRedirects.cache
+C:\Users\Guilherme Lino\Desktop\IPL\IS\IS-Project\SOMIOD\App_B\obj\Debug\App_B.Form1.resources
+C:\Users\Guilherme Lino\Desktop\IPL\IS\IS-Project\SOMIOD\App_B\obj\Debug\App_B.Properties.Resources.resources
+C:\Users\Guilherme Lino\Desktop\IPL\IS\IS-Project\SOMIOD\App_B\obj\Debug\App_B.csproj.GenerateResource.cache
+C:\Users\Guilherme Lino\Desktop\IPL\IS\IS-Project\SOMIOD\App_B\obj\Debug\App_B.csproj.CoreCompileInputs.cache
+C:\Users\Guilherme Lino\Desktop\IPL\IS\IS-Project\SOMIOD\App_B\obj\Debug\App_B.exe
+C:\Users\Guilherme Lino\Desktop\IPL\IS\IS-Project\SOMIOD\App_B\obj\Debug\App_B.pdb
