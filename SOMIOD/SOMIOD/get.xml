@@ -1,8 +1,9 @@
-<?xml version="1.0"?>
-<applications>
-  <application>
+<modules>
+  <module>
     <id>1</id>
-    <name>AppA</name>
-    <creation_dt>2022-12-10 02:24:05</creation_dt>
-  </application>
-</applications>
+    <name>Toma</name>
+    <creation_dt>2023-01-02 22:49:35</creation_dt>
+    <parent>1</parent>
+    <data />
+  </module>
+</modules>

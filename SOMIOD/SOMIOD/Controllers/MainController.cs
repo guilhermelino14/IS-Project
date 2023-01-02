@@ -15,6 +15,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Runtime;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Web;
 using System.Web.Http;
 using System.Web.Services.Description;
@@ -22,6 +23,8 @@ using System.Web.UI.WebControls;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using uPLibrary.Networking.M2Mqtt;
+using uPLibrary.Networking.M2Mqtt.Messages;
 using static System.Net.Mime.MediaTypeNames;
 using Application = SOMIOD.Models.Application;
 using Module = SOMIOD.Models.Module;
@@ -74,10 +77,14 @@ namespace SOMIOD.Controllers
 
                         DbMethods.ExecuteSqlCommand(sqlCommand);
 
+                        broker("applications", "Application " + appName + " created with id " + appId);
+
                         return Ok("Application " + appName + " created successfully with id " + appId);
                     }
+                    broker("applications", "An application with id " + appId + " already exists");
                     return Content(HttpStatusCode.BadRequest, "An application with id " + appId + " already exists");
                 }
+                broker("applications", RES_TYPE_ERROR + "application ?");
                 return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + "application ?");
             }
             return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
@@ -276,7 +283,7 @@ namespace SOMIOD.Controllers
 
                     return Ok(doc.OuterXml);
                 }
-                return Content(HttpStatusCode.BadRequest, "Module " + id + "doesn't exist on " + application);
+                return Content(HttpStatusCode.BadRequest, "Module " + id + " doesn't exist on " + application);
             }
             return Content(HttpStatusCode.BadRequest, "Application " + application + " doesn't exist");
         }
@@ -495,6 +502,36 @@ namespace SOMIOD.Controllers
             return Content(HttpStatusCode.BadRequest, application + " does not exist");
         }
 
+        [Route("{application}/{module}/{type}")]
+        //public IHttpActionResult DeleteAllSubModule(string application, string module)
+        public IHttpActionResult DeleteAllSubModule(string application, string module, string type)
+        {
+            string sqlQueryAppIdFromName = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+            int applicationId = DbMethods.GetId(sqlQueryAppIdFromName, "applications");
+
+            if (applicationId != 0)
+            {
+                string sqlQueryModuleIdFromName = "SELECT * FROM modules WHERE name = \'" + module + "\' AND parent = " + applicationId;
+                int moduleId = DbMethods.GetId(sqlQueryModuleIdFromName, "applications");
+
+                if (moduleId != 0)
+                {
+                    if (type == "data")
+                    {
+                        DbMethods.DeleteFromParent("data", moduleId);
+                        return Ok("All Data deleted from " + module + " successfully");
+                    }
+                    else if (type == "subscription")
+                    {
+                        DbMethods.DeleteFromParent("subscriptions", moduleId);
+                        return Ok("All Subscriptions deleted from " + module + " successfully");
+                    }
+                }
+                return Content(HttpStatusCode.BadRequest, module + " does not exist within " + application);
+            }
+            return Content(HttpStatusCode.BadRequest, application + " does not exist");
+        }
+
 
         // !!!!!!!!!!!!!!!!!!!!!!!
         // !! General Functions !!
@@ -509,6 +546,19 @@ namespace SOMIOD.Controllers
             StreamWriter writer = new StreamWriter(RECEIVED_FILE_PATH);
             writer.Write(bodyText);
             writer.Close();
+        }
+
+        public void broker(string channel, string message)
+        {
+            MqttClient m_cClient = new MqttClient("127.0.0.1");
+            string[] m_strTopicsInfo = { channel };
+
+            m_cClient.Connect(Guid.NewGuid().ToString());
+
+            //byte[] qosLevels = { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE };//QoS
+            //m_cClient.Subscribe(m_strTopicsInfo, qosLevels);
+
+            m_cClient.Publish(channel, Encoding.UTF8.GetBytes(message));
         }
 
     }

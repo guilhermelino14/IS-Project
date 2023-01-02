@@ -1,8 +1,1 @@
-<?xml version="1.0"?>
-<subscription res_type = "subscription">
-  <id>1</id>
-  <name>Subscription AA</name>
-  <parent>1</parent>
-  <event>Event AA</event>
-  <endpoint>Endpoint AA</endpoint>
-</subscription>
+<data res_type="data"><id>2</id><content>toma</content><parent>1</parent></data>
