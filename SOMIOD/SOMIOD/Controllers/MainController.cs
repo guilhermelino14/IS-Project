@@ -347,7 +347,7 @@ namespace SOMIOD.Controllers
                     string sqlQueryModuleId = "SELECT * FROM modules WHERE id = " + id + " AND parent = " + idApplication + " ORDER BY id";
                     if (DbMethods.GetId(sqlQueryModuleId, "modules") == id)
                     {
-                        DbMethods.DeleteFromParent("subcriptions",id); // Delete the subscriptions of this module
+                        DbMethods.DeleteFromParent("subscriptions",id); // Delete the subscriptions of this module
                         DbMethods.DeleteFromParent("data",id); // Delete the data of this module
                         DbMethods.DeleteFromId("modules", id); // Delete the module
                         return Ok("Module " + id + " deleted successfully");
@@ -416,10 +416,10 @@ namespace SOMIOD.Controllers
                             }
                             else if (element.GetAttribute("res_type") == "subscription")
                             {
-                                int subcriptionId = Convert.ToInt32(rcvDoc.SelectSingleNode("//id").InnerText);
+                                int subscriptionId = Convert.ToInt32(rcvDoc.SelectSingleNode("//id").InnerText);
 
-                                string sqlQuery = "SELECT * FROM subcriptions WHERE id = " + subcriptionId + " ORDER BY id";
-                                if (DbMethods.GetId(sqlQuery, "subcriptions") != subcriptionId)
+                                string sqlQuery = "SELECT * FROM subscriptions WHERE id = " + subscriptionId + " ORDER BY id";
+                                if (DbMethods.GetId(sqlQuery, "subscriptions") != subscriptionId)
                                 {
                                     string subscriptionName = rcvDoc.SelectSingleNode("//name").InnerText;
                                     string subscriptionEvent = rcvDoc.SelectSingleNode("//event").InnerText;
@@ -428,7 +428,7 @@ namespace SOMIOD.Controllers
                                     string sqlString = "INSERT INTO subscriptions values(@id, @name, @creation_dt, @parent, @event, @endpoint)";
 
                                     SqlCommand sqlCommand = new SqlCommand(sqlString);
-                                    sqlCommand.Parameters.AddWithValue("@id", subcriptionId);
+                                    sqlCommand.Parameters.AddWithValue("@id", subscriptionId);
                                     sqlCommand.Parameters.AddWithValue("@name", subscriptionName);
                                     sqlCommand.Parameters.AddWithValue("@creation_dt", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
                                     sqlCommand.Parameters.AddWithValue("@parent", parentId);
@@ -440,7 +440,7 @@ namespace SOMIOD.Controllers
 
                                     return Ok("Subscription created successfully");
                                 }
-                                return Content(HttpStatusCode.BadRequest, "Subcription " + subcriptionId + " already exists");
+                                return Content(HttpStatusCode.BadRequest, "Subscription " + subscriptionId + " already exists");
                             }
                             return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + " do you mean data or subscription ?");
                         }

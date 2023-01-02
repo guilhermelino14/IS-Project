@@ -74,8 +74,8 @@ namespace SOMIOD.Controllers
         {
             XmlDocument xmlDocument = new XmlDocument();
 
-            XmlDeclaration xmlDeclaration = xmlDocument.CreateXmlDeclaration("1.0", null, null);
-            xmlDocument.AppendChild(xmlDeclaration);
+            //XmlDeclaration xmlDeclaration = xmlDocument.CreateXmlDeclaration("1.0", null, null);
+            //xmlDocument.AppendChild(xmlDeclaration);
 
             return xmlDocument;
         }
