@@ -1,1 +1,1 @@
-<application res_type="application"><id>1</id><name>1</name></application>
+<module res_type="module"><id>1</id><name>AppA</name><parent>1</parent></module>

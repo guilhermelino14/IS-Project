@@ -1,31 +1,13 @@
-﻿using Newtonsoft.Json.Linq;
-using ProjectXML;
-using SOMIOD.Models;
-using SOMIOD.Properties;
+﻿using ProjectXML;
 using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
-using System.Data.SqlTypes;
 using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Net;
-using System.Net.Http;
-using System.Reflection;
-using System.Runtime;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Web;
 using System.Web.Http;
-using System.Web.Services.Description;
-using System.Web.UI.WebControls;
 using System.Xml;
-using System.Xml.Linq;
-using System.Xml.Serialization;
 using uPLibrary.Networking.M2Mqtt;
-using uPLibrary.Networking.M2Mqtt.Messages;
-using static System.Net.Mime.MediaTypeNames;
 using Application = SOMIOD.Models.Application;
 using Module = SOMIOD.Models.Module;
 
@@ -41,6 +23,8 @@ namespace SOMIOD.Controllers
         public static string XSD_PATH = HttpContext.Current.Server.MapPath("~/App_Data/");
         public static string RES_TYPE_ERROR = "Invalid res_type, did you mean: res_type = ";
 
+
+        public static string localhost = "127.0.0.1";
         // !!!!!!!!!!!!!!!!!!!!
         // !!! Applications !!!
         // !!!!!!!!!!!!!!!!!!!!
@@ -77,15 +61,16 @@ namespace SOMIOD.Controllers
 
                         DbMethods.ExecuteSqlCommand(sqlCommand);
 
-                        broker("geral", "Application " + appName + " created with id " + appId);
+                        brokerPublish("applications", "Application " + appName + " created successfully with id " + appId, localhost);
                         return Ok("Application " + appName + " created successfully with id " + appId);
                     }
-                    broker("geral", "An application with id " + appId + " already exists");
+                    brokerPublish("applications", "An application with id " + appId + " already exists", localhost);
                     return Content(HttpStatusCode.BadRequest, "An application with id " + appId + " already exists");
                 }
-                broker("geral", RES_TYPE_ERROR + "application ?");
+                brokerPublish("applications", RES_TYPE_ERROR + "application ?", localhost);
                 return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + "application ?");
             }
+            brokerPublish("applications", "Provided XML is Malformed", localhost);
             return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
         }
 
@@ -98,9 +83,10 @@ namespace SOMIOD.Controllers
 
             if (doc.SelectSingleNode("//application") == null)
             {
+                brokerPublish("applications", "", localhost);
                 return Content(HttpStatusCode.BadRequest, "No applications available");
             }
-
+            brokerPublish("applications", "Applications requested", localhost);
             return Ok(doc.OuterXml);
         }
 
@@ -114,8 +100,10 @@ namespace SOMIOD.Controllers
             {
                 XmlDocument doc = XmlUtils.GetSomething(sqlQueryAppId, "applications");
 
+                brokerPublish("applications", "Application " + id + " requested", localhost);
                 return Ok(doc.OuterXml);
             }
+            brokerPublish("applications", "Application " + id + " doesn't exist", localhost);
             return Content(HttpStatusCode.BadRequest, "Application " + id + " doesn't exist");
         }
 
@@ -154,14 +142,19 @@ namespace SOMIOD.Controllers
 
                             DbMethods.ExecuteSqlCommand(sqlCommand);
 
+                            brokerPublish("applications", "Application " + id + " updated successfully", localhost);
                             return Ok("Application " + id + " updated successfully");
                         }
+                        brokerPublish("applications", "Application " + id + " not updated", localhost);
                         return Content(HttpStatusCode.BadRequest, "Application " + id + " not updated");
                     }
+                    brokerPublish("applications", RES_TYPE_ERROR + "application ?", localhost);
                     return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + "application ?");
                 }
+                brokerPublish("applications", "Provided XML is Malformed", localhost);
                 return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
             }
+            brokerPublish("applications", "Application " + id + " doesn't exist", localhost);
             return Content(HttpStatusCode.BadRequest, "Application " + id + " doesn't exist");
         }
 
@@ -179,11 +172,14 @@ namespace SOMIOD.Controllers
                     if (node.InnerText != null)
                     {
                         DeleteModule(DbMethods.GetName(sqlQueryAppId, "applications"), Convert.ToInt32(node.InnerText));
+                        brokerPublish("modules", "", localhost);
                     }
                 }
                 DbMethods.DeleteFromId("applications", id);
+                brokerPublish("applications", "Application " + id + " deleted successfully", localhost);
                 return Ok("Application " + id + " deleted successfully");
             }
+            brokerPublish("applications", "Application " + id + " doesn't exist", localhost);
             return Content(HttpStatusCode.BadRequest, "Application " + id + " doesn't exist");
         }
 
@@ -232,16 +228,22 @@ namespace SOMIOD.Controllers
 
                                 DbMethods.ExecuteSqlCommand(sqlCommand);
 
-                                return Ok("Module " + moduleName + " created successfully");
+                                brokerPublish("modules", "Module " + moduleName + " created successfully with id " + moduleId, localhost);
+                                return Ok("Module " + moduleName + " created successfully with id " + moduleId);
                             }
+                            brokerPublish("modules", "An module with id " + moduleId + " already exists", localhost);
                             return Content(HttpStatusCode.BadRequest, "An module with id " + moduleId + " already exists");
                         }
+                        brokerPublish("modules", "Mismatch between URL App field and XML parent field", localhost);
                         return Content(HttpStatusCode.BadRequest, "Mismatch between URL App field and XML parent field");
                     }
+                    brokerPublish("modules", RES_TYPE_ERROR + "module ?", localhost);
                     return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + "module ?");
                 }
+                brokerPublish("modules", "Provided XML is Malformed", localhost);
                 return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
             }
+            brokerPublish("modules", "Application " + application + " doesn't exist", localhost);
             return Content(HttpStatusCode.BadRequest, "Application " + application + " doesn't exist");
         }
 
@@ -259,10 +261,13 @@ namespace SOMIOD.Controllers
 
                 if (doc.SelectSingleNode("//module") == null)
                 {
+                    brokerPublish("modules", "", localhost);
                     return Content(HttpStatusCode.BadRequest, "No modules available");
                 }
+                brokerPublish("modules", "Modules requested", localhost);
                 return Ok(doc.OuterXml);
             }
+            brokerPublish("modules", "Application " + application + " doesn't exist", localhost);
             return Content(HttpStatusCode.BadRequest, "Application " + application + " doesn't exist");
         }
 
@@ -280,10 +285,13 @@ namespace SOMIOD.Controllers
                 {
                     XmlDocument doc = XmlUtils.GetSomething(sqlQueryModuleId, "modules");
 
+                    brokerPublish("modules", "Module " + id + " requested", localhost);
                     return Ok(doc.OuterXml);
                 }
+                brokerPublish("modules", "Module " + id + " doesn't exist on " + application, localhost);
                 return Content(HttpStatusCode.BadRequest, "Module " + id + " doesn't exist on " + application);
             }
+            brokerPublish("modules", "Application " + application + " doesn't exist", localhost);
             return Content(HttpStatusCode.BadRequest, "Application " + application + " doesn't exist");
         }
 
@@ -328,16 +336,22 @@ namespace SOMIOD.Controllers
 
                                 DbMethods.ExecuteSqlCommand(sqlCommand);
 
+                                brokerPublish("modules", "Module " + id + " updated successfully", localhost);
                                 return Ok("Module " + id + " updated successfully");
                             }
+                            brokerPublish("modules", "Module " + id + " not updated", localhost);
                             return Content(HttpStatusCode.BadRequest, "Module " + id + " not updated");
                         }
+                        brokerPublish("modules", application + " does not exist", localhost);
                         return Content(HttpStatusCode.BadRequest, application + " does not exist");
                     }
+                    brokerPublish("modules", RES_TYPE_ERROR + "module?", localhost);
                     return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + "module?");
                 }
+                brokerPublish("modules", handler.ValidationMessage, localhost);
                 return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
             }
+            brokerPublish("modules", "Application " + application + " doesn't exist", localhost);
             return Content(HttpStatusCode.BadRequest, "Application " + application + " doesn't exist");
         }
 
@@ -356,10 +370,13 @@ namespace SOMIOD.Controllers
                         DbMethods.DeleteFromParent("subscriptions",id); // Delete the subscriptions of this module
                         DbMethods.DeleteFromParent("data",id); // Delete the data of this module
                         DbMethods.DeleteFromId("modules", id); // Delete the module
+                        brokerPublish("modules", "Module " + id + " deleted successfully", localhost);
                         return Ok("Module " + id + " deleted successfully");
                     }
+                    brokerPublish("modules", "Module " + id + " does not exist on " + application, localhost);
                     return Content(HttpStatusCode.BadRequest, "Module " + id + " does not exist on " + application); 
                 }
+                brokerPublish("modules", application + " does not exist", localhost);
                 return Content(HttpStatusCode.BadRequest, application + " does not exist");
         }
 
@@ -416,8 +433,14 @@ namespace SOMIOD.Controllers
                                     System.Diagnostics.Debug.WriteLine(sqlString);
                                     DbMethods.ExecuteSqlCommand(sqlCommand);
 
-                                    return Ok("Data created successfully");
+                                    //String strMsgToSend = subscriptionName + "|" + subscriptionEvent + "|" + subscriptionEnpoint;
+                                    //broker("geral",strMsgToSend);
+                                    //m_cClient.Publish(STR_CHANNEL_NAME, Encoding.UTF8.GetBytes(strMsgToSend));
+
+                                    brokerPublish("subscriptions&data", "Data " + dataId + " created successfully", localhost);
+                                    return Ok("Data " + dataId + " created successfully");
                                 }
+                                brokerPublish("subscriptions&data", "Data " + dataId + " already exists", localhost);
                                 return Content(HttpStatusCode.BadRequest, "Data " + dataId + " already exists");
                             }
                             else if (element.GetAttribute("res_type") == "subscription")
@@ -444,18 +467,29 @@ namespace SOMIOD.Controllers
                                     System.Diagnostics.Debug.WriteLine(sqlString);
                                     DbMethods.ExecuteSqlCommand(sqlCommand);
 
-                                    return Ok("Subscription created successfully");
+                                    //String strMsgToSend = subscriptionName + "|" + subscriptionEvent + "|" + subscriptionEnpoint;
+                                    //broker("geral",strMsgToSend);
+                                    //m_cClient.Publish(STR_CHANNEL_NAME, Encoding.UTF8.GetBytes(strMsgToSend));
+
+                                    brokerPublish("subscriptions&data", "Subscription " + subscriptionId + " created successfully", localhost);
+                                    return Ok("Subscription " + subscriptionId + " created successfully");
                                 }
+                                brokerPublish("subscriptions&data", "Subscription " + subscriptionId + " already exists", localhost);
                                 return Content(HttpStatusCode.BadRequest, "Subscription " + subscriptionId + " already exists");
                             }
+                            brokerPublish("subscriptions&data", RES_TYPE_ERROR + " do you mean data or subscription ?", localhost);
                             return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + " do you mean data or subscription ?");
                         }
-                        return Content(HttpStatusCode.BadRequest, "parent = " + parentId + " != module = " + moduleId);
+                        brokerPublish("subscriptions&data", "Passed " + parentId + " is different from module " + moduleId, localhost);
+                        return Content(HttpStatusCode.BadRequest, "Passed " + parentId + " is different from module " + moduleId);
                     }
+                    brokerPublish("subscriptions&data", "Provided XML is Malformed", localhost);
                     return Content(HttpStatusCode.BadRequest, "Provided XML is Malformed");
                 }
+                brokerPublish("subscriptions&data", module + " does not exist within " + application, localhost);
                 return Content(HttpStatusCode.BadRequest, module + " does not exist within " + application);
             }
+            brokerPublish("subscriptions&data", application + " does not exist", localhost);
             return Content(HttpStatusCode.BadRequest, application + " does not exist");
         }
 
@@ -481,8 +515,10 @@ namespace SOMIOD.Controllers
                         if (id == DbMethods.GetId(sqlQueryDataId,"data"))
                         {
                             DbMethods.DeleteFromId("data", id);
+                            brokerPublish("subscriptions&data", "Data " + id + " deleted successfully", localhost);
                             return Ok("Data " + id + " deleted successfully");
                         }
+                        brokerPublish("subscriptions&data", "Data " + id + " does not exist within " + module, localhost);
                         return Content(HttpStatusCode.BadRequest, "Data " + id + " does not exist within " + module);
                     }
                     else if (type == "subscription")
@@ -491,13 +527,17 @@ namespace SOMIOD.Controllers
                         if (id == DbMethods.GetId(sqlQuerySubscriptionId, "subscriptions"))
                         {
                             DbMethods.DeleteFromId("subscriptions", id);
+                            brokerPublish("subscriptions&data", "Subscription " + id + " deleted successfully", localhost);
                             return Ok("Subscription " + id + " deleted successfully");
                         }
+                        brokerPublish("subscriptions&data", "Subscription " + id + " does not exist within " + module, localhost);
                         return Content(HttpStatusCode.BadRequest, "Subscription " + id + " does not exist within " + module);
                     }
                 }
+                brokerPublish("subscriptions&data", module + " does not exist within " + application, localhost);
                 return Content(HttpStatusCode.BadRequest, module + " does not exist within " + application);
             }
+            brokerPublish("subscriptions&data", application + " does not exist", localhost);
             return Content(HttpStatusCode.BadRequest, application + " does not exist");
         }
 
@@ -518,16 +558,20 @@ namespace SOMIOD.Controllers
                     if (type == "data")
                     {
                         DbMethods.DeleteFromParent("data", moduleId);
+                        brokerPublish("subscriptions&data", "All Data deleted from " + module + " successfully", localhost);
                         return Ok("All Data deleted from " + module + " successfully");
                     }
                     else if (type == "subscription")
                     {
                         DbMethods.DeleteFromParent("subscriptions", moduleId);
+                        brokerPublish("subscriptions&data", "All Subscriptions deleted from " + module + " successfully", localhost);
                         return Ok("All Subscriptions deleted from " + module + " successfully");
                     }
                 }
+                brokerPublish("subscriptions&data", module + " does not exist within " + application, localhost);
                 return Content(HttpStatusCode.BadRequest, module + " does not exist within " + application);
             }
+            brokerPublish("subscriptions&data", application + " does not exist", localhost);
             return Content(HttpStatusCode.BadRequest, application + " does not exist");
         }
 
@@ -547,15 +591,12 @@ namespace SOMIOD.Controllers
             writer.Close();
         }
 
-        public void broker(string channel, string message)
+        public void brokerPublish(string channel, string message, string endpoint)
         {
-            MqttClient m_cClient = new MqttClient("127.0.0.1");
+            MqttClient m_cClient = new MqttClient(endpoint);
             string[] m_strTopicsInfo = { channel };
 
             m_cClient.Connect(Guid.NewGuid().ToString());
-
-            //byte[] qosLevels = { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE };//QoS
-            //m_cClient.Subscribe(m_strTopicsInfo, qosLevels);
 
             m_cClient.Publish(channel, Encoding.UTF8.GetBytes(message));
         }
