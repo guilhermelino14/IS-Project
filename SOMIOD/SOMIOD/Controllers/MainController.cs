@@ -433,7 +433,8 @@ namespace SOMIOD.Controllers
                                     System.Diagnostics.Debug.WriteLine(sqlString);
                                     DbMethods.ExecuteSqlCommand(sqlCommand);
 
-                                    string getAllSubs = "SELECT * FROM subscriptions WHERE parent = " + moduleId + " ORDER BY id";
+                                    //string getAllSubs = "SELECT * FROM subscriptions WHERE parent = " + moduleId + " ORDER BY id";
+                                    string getAllSubs = "SELECT * FROM subscriptions ORDER BY id";
                                     XmlDocument doc = XmlUtils.GetSomething(getAllSubs, "subscriptions");
                                     foreach (XmlNode node in doc.SelectSingleNode("//subscriptions"))
                                     {
