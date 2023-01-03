@@ -1,9 +1,7 @@
-<modules>
-  <module>
+<applications>
+  <application>
     <id>1</id>
-    <name>Toma</name>
-    <creation_dt>2023-01-02 22:49:35</creation_dt>
-    <parent>1</parent>
-    <data />
-  </module>
-</modules>
+    <name>AppA</name>
+    <creation_dt>2023-01-03 00:20:00</creation_dt>
+  </application>
+</applications>

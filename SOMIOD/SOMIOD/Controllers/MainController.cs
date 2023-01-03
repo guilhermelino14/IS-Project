@@ -77,14 +77,13 @@ namespace SOMIOD.Controllers
 
                         DbMethods.ExecuteSqlCommand(sqlCommand);
 
-                        broker("applications", "Application " + appName + " created with id " + appId);
-
+                        broker("geral", "Application " + appName + " created with id " + appId);
                         return Ok("Application " + appName + " created successfully with id " + appId);
                     }
-                    broker("applications", "An application with id " + appId + " already exists");
+                    broker("geral", "An application with id " + appId + " already exists");
                     return Content(HttpStatusCode.BadRequest, "An application with id " + appId + " already exists");
                 }
-                broker("applications", RES_TYPE_ERROR + "application ?");
+                broker("geral", RES_TYPE_ERROR + "application ?");
                 return Content(HttpStatusCode.BadRequest, RES_TYPE_ERROR + "application ?");
             }
             return Content(HttpStatusCode.BadRequest, handler.ValidationMessage);
