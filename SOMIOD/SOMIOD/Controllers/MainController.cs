@@ -1,6 +1,8 @@
 ﻿using ProjectXML;
+using SOMIOD.Models;
 using System;
 using System.Data.SqlClient;
+using System.Data.SqlTypes;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -9,6 +11,7 @@ using System.Web;
 using System.Web.Http;
 using System.Xml;
 using uPLibrary.Networking.M2Mqtt;
+using static System.Net.Mime.MediaTypeNames;
 using Application = SOMIOD.Models.Application;
 using Module = SOMIOD.Models.Module;
 
@@ -17,7 +20,7 @@ namespace SOMIOD.Controllers
     [RoutePrefix("api/somiod")]
     public class MainController : ApiController
     {
-        
+
         public static string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["SOMIOD.Properties.Settings.ConnStr"].ConnectionString;
         public static string RESPONSE_FILE_PATH = AppDomain.CurrentDomain.BaseDirectory.ToString() + "\\get.xml";
         public static string RECEIVED_FILE_PATH = AppDomain.CurrentDomain.BaseDirectory.ToString() + "\\post.xml";
@@ -168,7 +171,8 @@ namespace SOMIOD.Controllers
                 string sqlQuery = "SELECT * FROM modules WHERE parent = " + id + " ORDER BY id";
                 XmlDocument doc = XmlUtils.GetSomething(sqlQuery, "modules");
 
-                foreach (XmlNode node in doc.SelectNodes("//id")){
+                foreach (XmlNode node in doc.SelectNodes("//id"))
+                {
                     if (node.InnerText != null)
                     {
                         DeleteModule(DbMethods.GetName(sqlQueryAppId, "applications"), Convert.ToInt32(node.InnerText));
@@ -359,25 +363,25 @@ namespace SOMIOD.Controllers
         [Route("{application}/{id:int}")]
         public IHttpActionResult DeleteModule(string application, int id)
         {
-                string sqlQueryAppId = "SELECT * FROM applications WHERE name = \'" + application + "\'";
-                int idApplication = DbMethods.GetId(sqlQueryAppId, "applications");
+            string sqlQueryAppId = "SELECT * FROM applications WHERE name = \'" + application + "\'";
+            int idApplication = DbMethods.GetId(sqlQueryAppId, "applications");
 
-                if (idApplication != 0)
+            if (idApplication != 0)
+            {
+                string sqlQueryModuleId = "SELECT * FROM modules WHERE id = " + id + " AND parent = " + idApplication + " ORDER BY id";
+                if (DbMethods.GetId(sqlQueryModuleId, "modules") == id)
                 {
-                    string sqlQueryModuleId = "SELECT * FROM modules WHERE id = " + id + " AND parent = " + idApplication + " ORDER BY id";
-                    if (DbMethods.GetId(sqlQueryModuleId, "modules") == id)
-                    {
-                        DbMethods.DeleteFromParent("subscriptions",id); // Delete the subscriptions of this module
-                        DbMethods.DeleteFromParent("data",id); // Delete the data of this module
-                        DbMethods.DeleteFromId("modules", id); // Delete the module
-                        brokerPublish("modules", "Module " + id + " deleted successfully", localhost);
-                        return Ok("Module " + id + " deleted successfully");
-                    }
-                    brokerPublish("modules", "Module " + id + " does not exist on " + application, localhost);
-                    return Content(HttpStatusCode.BadRequest, "Module " + id + " does not exist on " + application); 
+                    DbMethods.DeleteFromParent("subscriptions", id); // Delete the subscriptions of this module
+                    DbMethods.DeleteFromParent("data", id); // Delete the data of this module
+                    DbMethods.DeleteFromId("modules", id); // Delete the module
+                    brokerPublish("modules", "Module " + id + " deleted successfully", localhost);
+                    return Ok("Module " + id + " deleted successfully");
                 }
-                brokerPublish("modules", application + " does not exist", localhost);
-                return Content(HttpStatusCode.BadRequest, application + " does not exist");
+                brokerPublish("modules", "Module " + id + " does not exist on " + application, localhost);
+                return Content(HttpStatusCode.BadRequest, "Module " + id + " does not exist on " + application);
+            }
+            brokerPublish("modules", application + " does not exist", localhost);
+            return Content(HttpStatusCode.BadRequest, application + " does not exist");
         }
 
         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -518,7 +522,7 @@ namespace SOMIOD.Controllers
                     if (type == "data")
                     {
                         string sqlQueryDataId = "SELECT * FROM data WHERE id = " + id + " AND parent = " + moduleId;
-                        if (id == DbMethods.GetId(sqlQueryDataId,"data"))
+                        if (id == DbMethods.GetId(sqlQueryDataId, "data"))
                         {
                             DbMethods.DeleteFromId("data", id);
                             brokerPublish("subscriptions&data", "Data " + id + " deleted successfully", localhost);
@@ -600,11 +604,43 @@ namespace SOMIOD.Controllers
         public void brokerPublish(string channel, string message, string endpoint)
         {
             MqttClient m_cClient = new MqttClient(endpoint);
-            string[] m_strTopicsInfo = { channel };
+            string[] m_strTopicsInfo = { channel, "defesa" };
 
             m_cClient.Connect(Guid.NewGuid().ToString());
 
-            m_cClient.Publish(channel, Encoding.UTF8.GetBytes(message));
+            foreach (string canal in m_strTopicsInfo)
+            {
+                m_cClient.Publish(canal, Encoding.UTF8.GetBytes(message));
+            }
+        }
+
+        // !!!!!!!!!!!!
+        // !! Defesa !!
+        // !!!!!!!!!!!!
+
+        [Route("count")]
+        public IHttpActionResult GetContagem()
+        {
+            string sqlQuery = "SELECT COUNT(name) as count FROM applications";
+            int result;
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                SqlCommand cmd = new SqlCommand(sqlQuery, conn);
+                result = (int)cmd.ExecuteScalar();
+                conn.Close();
+            }
+
+            brokerPublish("count", result.ToString(), localhost);
+            return Ok(result);
+        }
+
+        [Route("status")]
+        public IHttpActionResult GetStatus()
+        {
+            brokerPublish("status", "a api está ok", localhost);
+            return Ok("a api está ok");
         }
 
     }

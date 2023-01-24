@@ -23,6 +23,7 @@ namespace SOMIOD.Controllers
                 SqlCommand command = sqlCommand;
 
                 int nrows = command.ExecuteNonQuery();
+                System.Diagnostics.Debug.WriteLine(nrows.ToString());
                 sqlConnection.Close();
             }
             catch (Exception e)
